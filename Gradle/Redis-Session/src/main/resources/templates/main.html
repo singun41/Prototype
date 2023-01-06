@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+        <title>Main Page</title>
+        <meta name='viewport' content='width=device-width, initial-scale=1'>
+        <!-- <link rel='stylesheet' type='text/css' media='screen' href='main.css'> -->
+        <!-- <script src='main.js'></script> -->
+    </head>
+    <body>
+        <div>This is main page.</div><br><br>
+
+        <div th:text="|user id: ${user.userId}|"></div>
+        <div th:text="|role: ${user.role.title}|"></div>
+
+        <div>
+            <span>auth: </span>
+            <th:block th:each="auth : ${user.auths}">
+                <span th:text="|${auth.title}, |"></span>
+            </th:block>
+        </div><br>
+
+        <div>
+            <a href="/logout">Logout</a>
+        </div>
+    </body>
+</html>

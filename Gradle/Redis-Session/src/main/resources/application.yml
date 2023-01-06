@@ -1,0 +1,48 @@
+spring:
+    thymeleaf:
+        cache: false
+
+    devtools:
+        livereload:
+            enabled: true
+
+    datasource:
+        url: jdbc:mariadb://192.168.100.85:3306/dev
+        driver-class-name: org.mariadb.jdbc.Driver
+        username: dev
+        password: dev##**
+
+    jpa:
+        show-sql: true
+        generate-ddl: false
+        hibernate:
+            ddl-auto: validate
+        properties:
+            hibernate:
+                format_sql: true
+                dialect: org.hibernate.dialect.MariaDB106Dialect
+        open-in-view: false
+
+    session:
+        store-type: redis
+
+    redis:
+        host: 192.168.100.85
+        port: 6379
+        password: redis
+
+    output:
+        ansi:
+            enabled: always
+
+server:
+    port: 8080
+    servlet:
+        session:
+            cookie:
+                http-only: false
+                secure: false
+
+logging:
+    level:
+        root: info
