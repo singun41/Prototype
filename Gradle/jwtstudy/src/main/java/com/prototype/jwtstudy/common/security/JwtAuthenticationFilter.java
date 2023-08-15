@@ -12,6 +12,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.prototype.jwtstudy.common.security.vo.Jwt;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,20 +23,43 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {   // Generic
   private final JwtProvider jwtProvider;
   private final String prefixBearer = "Bearer-";
   private final String strAuthorization = "Authorization";
+  private final String strRefreshToken = "refreshToken";
 
 
   @Override
   public void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws IOException, ServletException {
     // JWT 추출하기
-    String token = getToken(req);
-    log.info("doFilterInternal() called. token: {}", token);
+    String accessToken = getToken(req);
+    log.info("doFilterInternal() called. accessToken: {}", accessToken);
     
-    if(token == null)
+    if(accessToken == null)
       throw new IllegalArgumentException("doFilterInternal() token is null.");
 
-    if(jwtProvider.validation(token)) {
-      Authentication authentication = jwtProvider.getAuthentication(token);
+    if(jwtProvider.validation(accessToken)) {
+      Authentication authentication = jwtProvider.getAuthentication(accessToken);
       SecurityContextHolder.getContext().setAuthentication(authentication);
+    
+    } else {
+      String refreshToken = getRefreshToken(req);
+      if(refreshToken == null) {
+        log.warn("refresh token is null");
+      
+      } else {
+        if(jwtProvider.validation(refreshToken)) {
+          log.info("valid refresh token. access token regenerate.");
+          Jwt jwt = jwtProvider.tokenRegenerate(refreshToken);
+          if(jwt != null) {
+            String strAccessToken = new StringBuilder(jwt.getGrantType()).append("-").append(jwt.getAccessToken()).toString();
+            // Cookie accessToken = new Cookie("Authorization", strAccessToken);
+            // res.addCookie(accessToken);
+            res.addHeader(strAuthorization, strAccessToken);
+          }
+
+        } else {
+          log.warn("refresh token is invalid.");
+          jwtProvider.removeCache(refreshToken);
+        }
+      }
     }
 
     chain.doFilter(req, res);
@@ -78,5 +103,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {   // Generic
     }
 
     return null;
+  }
+
+
+  private String getRefreshToken(HttpServletRequest req) {
+    log.info("getRefreshToken() called.");
+    return req.getHeader(strRefreshToken);
   }
 }

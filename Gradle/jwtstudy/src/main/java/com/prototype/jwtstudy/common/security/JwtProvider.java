@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.jasypt.encryption.pbe.PBEStringCleanablePasswordEncryptor;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Component;
 
 import com.prototype.jwtstudy.common.config.ConfigProperties;
 import com.prototype.jwtstudy.common.security.vo.Jwt;
+import com.prototype.jwtstudy.common.security.vo.UserInfo;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -46,6 +48,7 @@ public class JwtProvider {
   private final Key key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
   private final String strAuths = "auths";
   private final String bearer = "Bearer";
+  private final ConcurrentHashMap<String, UserInfo> userInfoCache = new ConcurrentHashMap<>(1000);
 
 
   public Jwt generate(Authentication authentication) {
@@ -60,7 +63,7 @@ public class JwtProvider {
     Date refreshTokenExpDt =
     Date.from(LocalDateTime.now().plusMinutes(10).atZone(ConfigProperties.ZONE_ID).toInstant());
 
-    log.info("accessTokenExpDt: {}", accessTokenExpDt);
+    log.info("accessTokenExpDt: {}, refreshTokenExpDt: {}", accessTokenExpDt, refreshTokenExpDt);
 
     // user id를 인코딩해서 보낸다.
     String encodedId = jasyptStringEncryptor.encrypt(authentication.getName());
@@ -78,6 +81,7 @@ public class JwtProvider {
     .setExpiration(refreshTokenExpDt)
     .signWith(key, SignatureAlgorithm.HS256).compact();
 
+    caching(refreshToken, new UserInfo(encodedId, encodedAuths));
     return Jwt.builder().grantType(bearer).accessToken(accessToken).refreshToken(refreshToken).build();
   }
 
@@ -160,5 +164,40 @@ public class JwtProvider {
     }
 
     return false;
+  }
+
+
+  public Jwt tokenRegenerate(String refreshToken) {
+    UserInfo userInfo = userInfoCache.get(refreshToken);
+
+    if(userInfo == null) {
+      log.warn("Cannot find the userInfo using the refreshToken.");
+      return null;
+    }
+
+    log.info("tokenRegenerate() called.");
+    Date accessTokenExpDt =
+    Date.from(LocalDateTime.now().plusSeconds(45).atZone(ConfigProperties.ZONE_ID).toInstant());
+
+    String newAccessToken =
+    Jwts.builder()
+    .setSubject(userInfo.getEncodedId())
+    .claim(strAuths, userInfo.getEncodedAuths())
+    .setExpiration(accessTokenExpDt)
+    .signWith(key, SignatureAlgorithm.HS256).compact();
+
+    return Jwt.builder().grantType(bearer).accessToken(newAccessToken).refreshToken(refreshToken).build();
+  }
+
+
+  private void caching(String refreshToken, UserInfo userInfo) {
+    log.info("userInfo cached.");
+    userInfoCache.put(refreshToken, userInfo);
+  }
+
+
+  void removeCache(String refreshToken) {
+    userInfoCache.remove(refreshToken);
+    log.info("userInfo removed.");
   }
 }

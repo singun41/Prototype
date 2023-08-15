@@ -22,6 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class SecurityController {
   private final SecurityService securityService;
+  private final String strAuthorization = "Authorization";
+  private final String strRefreshToken = "refreshToken";
 
 
   @PostMapping("/login")
@@ -32,8 +34,15 @@ public class SecurityController {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result.getAllErrors().get(0));
 
     Jwt jwt = securityService.login(dto.getUserId(), dto.getUserPw());
-    Cookie bearerToken = new Cookie("Authorization", new StringBuilder(jwt.getGrantType()).append("-").append(jwt.getAccessToken()).toString());
-    res.addCookie(bearerToken);
+    String strAccessToken = new StringBuilder(jwt.getGrantType()).append("-").append(jwt.getAccessToken()).toString();
+
+    // Cookie accessToken = new Cookie(strAuthorization, strAccessToken);
+    // Cookie refreshToken = new Cookie(strRefreshToken, jwt.getRefreshToken());
+    // res.addCookie(accessToken);
+    // res.addCookie(refreshToken);
+
+    res.addHeader(strAuthorization, strAccessToken);
+    res.addHeader(strRefreshToken, jwt.getRefreshToken());
 
     log.info("{}", jwt);
     return ResponseEntity.ok().body(jwt);
