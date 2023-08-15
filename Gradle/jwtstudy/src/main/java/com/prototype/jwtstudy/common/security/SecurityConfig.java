@@ -29,16 +29,13 @@ public class SecurityConfig {
     .httpBasic(httpBasic -> httpBasic.disable())
     .formLogin(formLogin -> formLogin.disable())
     .csrf(csrf -> csrf.disable())
-    .authorizeHttpRequests(auth ->
-      auth.antMatchers(urlLogin).permitAll()
-      .anyRequest().authenticated()
-    )
+    .authorizeHttpRequests(auth -> auth.antMatchers(urlLogin).permitAll().anyRequest().authenticated())
     .sessionManagement(sessionMngt -> sessionMngt.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
     .addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class)
     .build();
   }
 
-
+  
   @Bean
   PasswordEncoder passwordEncoder() {
     // return new BCryptPasswordEncoder();
@@ -57,6 +54,7 @@ public class SecurityConfig {
       }
     };
   }
+
 
   @Bean
   GrantedAuthorityDefaults grantedAuthorityDefaults() {

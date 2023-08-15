@@ -21,7 +21,6 @@ import com.prototype.jwtstudy.common.security.vo.Jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.InvalidClaimException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -45,7 +44,7 @@ public class JwtProvider {
   private final PBEStringCleanablePasswordEncryptor jasyptStringEncryptor;
   private final String secretKey = "cXlZho4532d2lzMgTkQZGEzN6l0UJ49Ham74Gs2PcjGs8nUt";   // 최소 43개의 문자열
   private final Key key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
-  private final String auths = "auths";
+  private final String strAuths = "auths";
   private final String bearer = "Bearer";
 
 
@@ -56,10 +55,12 @@ public class JwtProvider {
     ).collect(Collectors.joining(","));
 
     Date accessTokenExpDt =
-    Date.from(LocalDateTime.now().plusMinutes(5).atZone(ConfigProperties.ZONE_ID).toInstant());
+    Date.from(LocalDateTime.now().plusSeconds(45).atZone(ConfigProperties.ZONE_ID).toInstant());
 
     Date refreshTokenExpDt =
-    Date.from(LocalDateTime.now().plusMinutes(30).atZone(ConfigProperties.ZONE_ID).toInstant());
+    Date.from(LocalDateTime.now().plusMinutes(10).atZone(ConfigProperties.ZONE_ID).toInstant());
+
+    log.info("accessTokenExpDt: {}", accessTokenExpDt);
 
     // user id를 인코딩해서 보낸다.
     String encodedId = jasyptStringEncryptor.encrypt(authentication.getName());
@@ -68,7 +69,7 @@ public class JwtProvider {
     String accessToken =
     Jwts.builder()
     .setSubject(encodedId)
-    .claim(auths, encodedAuths)
+    .claim(strAuths, encodedAuths)
     .setExpiration(accessTokenExpDt)
     .signWith(key, SignatureAlgorithm.HS256).compact();
 
@@ -82,8 +83,13 @@ public class JwtProvider {
 
 
   public Authentication getAuthentication(String accessToken) {
+    log.info("getAuthentication() called.");
     Claims claims = getClaims(accessToken);
-    if(claims.get(auths) == null)
+
+    if(claims == null)
+      throw new RuntimeException("토큰이 없습니다.");
+
+    if(claims.get(strAuths) == null)
       throw new RuntimeException("권한 정보가 없는 토큰입니다.");
 
     // 클레임에서 정보 가져오기
@@ -93,7 +99,7 @@ public class JwtProvider {
     log.info("{} --> {}", userIdEnc, userId);
 
     // 인코딩된 유저 권한을 디코딩.
-    String strAuthsEnc = claims.get(auths).toString();
+    String strAuthsEnc = claims.get(strAuths).toString();
     String strAuths = jasyptStringEncryptor.decrypt(strAuthsEnc);
     log.info("{} --> {}", strAuthsEnc, strAuths);
 
@@ -108,36 +114,51 @@ public class JwtProvider {
 
   private Claims getClaims(String accessToken) {
     try {
+      log.info("getClaim() called.");
       return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(accessToken).getBody();
     
     } catch(ExpiredJwtException e) {
-      log.error("token expired.");
+      log.error("getClaim() ExpiredJwtException. {}", e.getMessage());
       return e.getClaims();
 
-    } catch(InvalidClaimException e) {
-      log.error("invalid token.");
-      return e.getClaims();
+    } catch(UnsupportedJwtException e) {
+      log.error("getClaim() UnsupportedJwtException. {}", e.getMessage());
+    
+    } catch(MalformedJwtException | SecurityException e) {
+      log.error("getClaim() MalformedJwtException. {}", e.getMessage());
+    
+    } catch(IllegalArgumentException e) {
+      log.error("getClaim() IllegalArgumentException. {}", e.getMessage());
+    
+    } catch(Exception e) {
+      log.error("getClaim() Exception. {}", e.getMessage());
     }
+    return null;
   }
 
 
-  public boolean validation(String token) {
+  public boolean validation(String token) {   // JwtAuthenticationFilter에서 호출.
     try {
+      log.info("validation() called.");
       Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
       return true;
 
-    } catch(SecurityException | MalformedJwtException e) {
-      log.error("Invalid JWT.");
-
     } catch(ExpiredJwtException e) {
-      log.error("token expired.");
+      log.error("validation() ExpiredJwtException. {}", e.getMessage());
 
     } catch(UnsupportedJwtException e) {
-      log.error("Unsupported JWT.");
+      log.error("validation() UnsupportedJwtException. {}", e.getMessage());
+    
+    } catch(MalformedJwtException | SecurityException e) {
+      log.error("validation() MalformedJwtException. {}", e.getMessage());
     
     } catch(IllegalArgumentException e) {
-      log.error("JWT claims string is empty.");
+      log.error("validation() IllegalArgumentException. {}", e.getMessage());
+    
+    } catch(Exception e) {
+      log.error("validation() Exception. {}", e.getMessage());
     }
+
     return false;
   }
 }
