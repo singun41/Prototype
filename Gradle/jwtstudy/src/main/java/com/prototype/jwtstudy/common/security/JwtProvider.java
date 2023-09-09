@@ -48,7 +48,7 @@ public class JwtProvider {
   private final Key key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
   private final String strAuths = "auths";
   private final String bearer = "Bearer";
-  private final ConcurrentHashMap<String, UserInfo> userInfoCache = new ConcurrentHashMap<>(1000);
+  private final ConcurrentHashMap<String, UserInfo> cacheUserInfo = new ConcurrentHashMap<>(1000);
 
 
   Jwt generate(Authentication authentication) {   // 로그인 시 생성
@@ -72,7 +72,7 @@ public class JwtProvider {
 
 
   Jwt regenerate(String refreshToken) {   // 로그인 이후 만료시 RefreshToken으로 재생성
-    UserInfo userInfo = userInfoCache.get(refreshToken);
+    UserInfo userInfo = cacheUserInfo.get(refreshToken);
 
     if(userInfo == null) {
       log.warn("Cannot find the userInfo using the refreshToken.");
@@ -120,10 +120,9 @@ public class JwtProvider {
     Claims claims = getClaims(accessToken);
 
     if(claims == null)
-      throw new RuntimeException("토큰이 없습니다.");
-
+      throw new RuntimeException("Claim has no token.");
     if(claims.get(strAuths) == null)
-      throw new RuntimeException("권한 정보가 없는 토큰입니다.");
+      throw new RuntimeException("Claim has no authorities.");
 
     // 클레임에서 정보 가져오기
     // 인코딩된 유저 ID를 디코딩.
@@ -197,12 +196,12 @@ public class JwtProvider {
 
   private void caching(String refreshToken, UserInfo userInfo) {
     log.info("userInfo cached.");
-    userInfoCache.put(refreshToken, userInfo);
+    cacheUserInfo.put(refreshToken, userInfo);
   }
 
 
   void removeCache(String refreshToken) {
-    userInfoCache.remove(refreshToken);
+    cacheUserInfo.remove(refreshToken);
     log.info("userInfo removed.");
   }
 }
