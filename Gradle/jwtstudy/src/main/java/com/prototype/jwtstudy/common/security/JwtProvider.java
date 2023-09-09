@@ -85,6 +85,7 @@ public class JwtProvider {
 
     // AccessToken을 새로 발급할 때 RefreshToken도 새로 발급해서 보안을 강화한다.
     // 이 조건으로 유저는 현재 1개의 토큰만 로그인이 가능하다.
+    // 여러 기기에서 로그인할 수 있게 하려면 유저별로 AccessToken과 RefreshToken을 DB에 저장하도록 변경하면 된다.
     removeCache(refreshToken);
     caching(newRefreshToken, userInfo);
 
@@ -98,7 +99,7 @@ public class JwtProvider {
 
 
   private String generateAccessToken(String encodedId, String encodedAuths) {
-    Date accessTokenExpDt = Date.from(DateTimeGenerator.now().plusSeconds(45).atZone(ConfigProperties.ZONE_ID).toInstant());
+    Date accessTokenExpDt = Date.from(DateTimeGenerator.now().plusMinutes(5).atZone(ConfigProperties.ZONE_ID).toInstant());
     log.info("access token expired: {}", accessTokenExpDt);
 
     return Jwts.builder().setSubject(encodedId).claim(strAuths, encodedAuths)
@@ -107,7 +108,7 @@ public class JwtProvider {
 
 
   private String generateRefreshToken() {
-    Date refreshTokenExpDt = Date.from(DateTimeGenerator.now().plusMinutes(3).atZone(ConfigProperties.ZONE_ID).toInstant());
+    Date refreshTokenExpDt = Date.from(DateTimeGenerator.now().plusMinutes(20).atZone(ConfigProperties.ZONE_ID).toInstant());
     log.info("refresh token expired: {}", refreshTokenExpDt);
 
     return Jwts.builder().setExpiration(refreshTokenExpDt).signWith(key, SignatureAlgorithm.HS256).compact();
@@ -128,17 +129,17 @@ public class JwtProvider {
     // 인코딩된 유저 ID를 디코딩.
     String userIdEnc = claims.getSubject();
     String userId = jasyptStringEncryptor.decrypt(userIdEnc);
-    log.info("{} --> {}", userIdEnc, userId);
+    log.info("User Id --> {}", userId);
 
     // 인코딩된 유저 권한을 디코딩.
     String strAuthsEnc = claims.get(strAuths).toString();
     String strAuths = jasyptStringEncryptor.decrypt(strAuthsEnc);
-    log.info("{} --> {}", strAuthsEnc, strAuths);
+    log.info("Auths --> {}", strAuths);
 
     Collection<? extends GrantedAuthority> authorities =
     Arrays.stream(strAuths.split(",")).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
 
-    // DB를 조회하지 않고 JWT로 유저를 구분할 수 있다. UserDetails 객체를 만들어서 Authentication 리턴
+    // DB를 조회하지 않고 token으로 유저를 구분할 수 있다. UserDetails 객체를 만들어서 Authentication 리턴
     UserDetails principal = new User(userId, "", authorities);
     return new UsernamePasswordAuthenticationToken(principal, "", authorities);
   }

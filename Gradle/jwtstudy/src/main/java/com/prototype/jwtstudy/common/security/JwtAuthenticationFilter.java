@@ -41,37 +41,40 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {   // Generic
       log.info("doFilterInternal() called. accessToken: {}", accessToken);
       
       if(accessToken == null) {
-        throw new IllegalArgumentException("doFilterInternal() token is null.");
-      }
+        log.warn("aceess token is null.");
+        // 인증없이 접근할 수 있는 url을 사용할 수 있으므로 주석 처리. SecurityConfig에 인증없이 접근할 수 있는 url을 추가해준다.
+        // throw new IllegalArgumentException("doFilterInternal() token is null.");
 
-      if(jwtProvider.validation(accessToken.replace(prefixBearer, ""))) {   // "Bearer-"를 제거하고 accessToken만 가져온다.
-        Authentication authentication = jwtProvider.getAuthentication(accessToken);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-      
       } else {
-        String refreshToken = getRefreshToken(req);
-        if(refreshToken == null) {
-          log.warn("refresh token is null");
+        if(jwtProvider.validation(accessToken)) {
+          Authentication authentication = jwtProvider.getAuthentication(accessToken);
+          SecurityContextHolder.getContext().setAuthentication(authentication);
         
         } else {
-          if(jwtProvider.validation(refreshToken)) {
-            log.info("valid refresh token. access token regenerate.");
-            Jwt jwt = jwtProvider.regenerate(refreshToken);
-
-            if(jwt != null) {
-              res.addHeader(ConfigProperties.STR_AUTHORIZATION, jwt.getAccessToken());
-              res.addHeader(ConfigProperties.STR_REFRESH_TOKEN, jwt.getRefreshToken());
-
-              // cookie로 전달할 때
-              // Cookie accessToken = new Cookie(ConfigProperties.STR_AUTHORIZATION, jwt.getAccessToken());
-              // Cookie refreshToken = new Cookie(ConfigProperties.STR_REFRESH_TOKEN, jwt.getRefreshToken());
-              // res.addCookie(accessToken);
-              // res.addCookie(refreshToken);
-            }
-
+          String refreshToken = getRefreshToken(req);
+          if(refreshToken == null) {
+            log.warn("refresh token is null.");
+          
           } else {
-            log.warn("refresh token is invalid.");
-            jwtProvider.removeCache(refreshToken);
+            if(jwtProvider.validation(refreshToken)) {
+              log.info("valid refresh token. access token regenerate.");
+              Jwt jwt = jwtProvider.regenerate(refreshToken);
+
+              if(jwt != null) {
+                res.addHeader(ConfigProperties.STR_AUTHORIZATION, jwt.getAccessToken());
+                res.addHeader(ConfigProperties.STR_REFRESH_TOKEN, jwt.getRefreshToken());
+
+                // cookie로 전달할 때
+                // Cookie accessToken = new Cookie(ConfigProperties.STR_AUTHORIZATION, jwt.getAccessToken());
+                // Cookie refreshToken = new Cookie(ConfigProperties.STR_REFRESH_TOKEN, jwt.getRefreshToken());
+                // res.addCookie(accessToken);
+                // res.addCookie(refreshToken);
+              }
+
+            } else {
+              log.warn("refresh token is invalid.");
+              jwtProvider.removeCache(refreshToken);
+            }
           }
         }
       }

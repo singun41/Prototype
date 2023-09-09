@@ -42,7 +42,7 @@ public class SecurityController {
     // res.addCookie(accessToken);
     // res.addCookie(refreshToken);
 
-    log.info("{}", jwt);
-    return ResponseEntity.ok().body(jwt);
+    log.info("User {} logged in succeed.", dto.getUserId());
+    return ResponseEntity.ok().body("success.");
   }
 }

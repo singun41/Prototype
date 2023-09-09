@@ -30,7 +30,7 @@ public class SecurityConfig {
     .httpBasic(httpBasic -> httpBasic.disable())
     .formLogin(formLogin -> formLogin.disable())
     .csrf(csrf -> csrf.disable())
-    .authorizeHttpRequests(auth -> auth.antMatchers(ConfigProperties.URL_LOGIN).permitAll().anyRequest().authenticated())
+    .authorizeHttpRequests(auth -> auth.antMatchers(ConfigProperties.URL_LOGIN, "/free").permitAll().anyRequest().authenticated())
     .sessionManagement(sessionMngt -> sessionMngt.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
     .addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class)
     .build();
