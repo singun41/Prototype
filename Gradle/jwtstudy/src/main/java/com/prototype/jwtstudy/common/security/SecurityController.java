@@ -1,6 +1,6 @@
 package com.prototype.jwtstudy.common.security;
 
-import javax.servlet.http.Cookie;
+// import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.http.HttpStatus;
@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.prototype.jwtstudy.common.config.ConfigProperties;
 import com.prototype.jwtstudy.common.security.dto.request.ReqDtoLogin;
 import com.prototype.jwtstudy.common.security.vo.Jwt;
 
@@ -22,11 +23,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class SecurityController {
   private final SecurityService securityService;
-  private final String strAuthorization = "Authorization";
-  private final String strRefreshToken = "refreshToken";
 
 
-  @PostMapping("/login")
+  @PostMapping(ConfigProperties.URL_LOGIN)
   public ResponseEntity<?> login(@Validated @RequestBody ReqDtoLogin dto, BindingResult result, HttpServletResponse res) throws Exception {
     log.info("{}", dto);
 
@@ -34,15 +33,14 @@ public class SecurityController {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result.getAllErrors().get(0));
 
     Jwt jwt = securityService.login(dto.getUserId(), dto.getUserPw());
-    String strAccessToken = new StringBuilder(jwt.getGrantType()).append("-").append(jwt.getAccessToken()).toString();
+    res.addHeader(ConfigProperties.STR_AUTHORIZATION, jwt.getAccessToken());
+    res.addHeader(ConfigProperties.STR_REFRESH_TOKEN, jwt.getRefreshToken());
 
-    // Cookie accessToken = new Cookie(strAuthorization, strAccessToken);
-    // Cookie refreshToken = new Cookie(strRefreshToken, jwt.getRefreshToken());
+    // cookie로 전달할 때
+    // Cookie accessToken = new Cookie(ConfigProperties.STR_AUTHORIZATION, jwt.getAccessToken());
+    // Cookie refreshToken = new Cookie(ConfigProperties.STR_REFRESH_TOKEN, jwt.getRefreshToken());
     // res.addCookie(accessToken);
     // res.addCookie(refreshToken);
-
-    res.addHeader(strAuthorization, strAccessToken);
-    res.addHeader(strRefreshToken, jwt.getRefreshToken());
 
     log.info("{}", jwt);
     return ResponseEntity.ok().body(jwt);

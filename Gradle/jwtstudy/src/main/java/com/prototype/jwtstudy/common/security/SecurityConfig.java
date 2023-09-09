@@ -1,6 +1,6 @@
 package com.prototype.jwtstudy.common.security;
 
-import org.jasypt.encryption.pbe.PBEStringCleanablePasswordEncryptor;
+// import org.jasypt.encryption.pbe.PBEStringCleanablePasswordEncryptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -11,16 +11,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import com.prototype.jwtstudy.common.config.ConfigProperties;
 
-@Slf4j
+import lombok.RequiredArgsConstructor;
+// import lombok.extern.slf4j.Slf4j;
+
+// @Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
-  private final PBEStringCleanablePasswordEncryptor jasyptStringEncryptor;
+  // private final PBEStringCleanablePasswordEncryptor jasyptStringEncryptor;
   private final JwtProvider jwtProvider;
-  private final String urlLogin = "/login";
 
 
   @Bean
@@ -29,7 +30,7 @@ public class SecurityConfig {
     .httpBasic(httpBasic -> httpBasic.disable())
     .formLogin(formLogin -> formLogin.disable())
     .csrf(csrf -> csrf.disable())
-    .authorizeHttpRequests(auth -> auth.antMatchers(urlLogin).permitAll().anyRequest().authenticated())
+    .authorizeHttpRequests(auth -> auth.antMatchers(ConfigProperties.URL_LOGIN).permitAll().anyRequest().authenticated())
     .sessionManagement(sessionMngt -> sessionMngt.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
     .addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class)
     .build();
@@ -38,21 +39,21 @@ public class SecurityConfig {
   
   @Bean
   PasswordEncoder passwordEncoder() {
-    // return new BCryptPasswordEncoder();
+    return new BCryptPasswordEncoder();
 
-    return new PasswordEncoder() {   // BCrypt 대신에 커스텀 인코더 사용해보기. Jasypt는 복호화가 가능함. 운영에서는 BCrypt를 사용할 것.
-      @Override
-      public String encode(CharSequence rawPassword) {
-        log.info("rawPassword=[{}]", rawPassword);
-        return jasyptStringEncryptor.encrypt(rawPassword.toString());
-      }
+    // return new PasswordEncoder() {   // BCrypt 대신에 커스텀 인코더 사용해보기. Jasypt는 복호화가 가능함. 운영에서는 BCrypt를 사용할 것.
+    //   @Override
+    //   public String encode(CharSequence rawPassword) {
+    //     log.info("rawPassword=[{}]", rawPassword);
+    //     return jasyptStringEncryptor.encrypt(rawPassword.toString());
+    //   }
 
-      @Override
-      public boolean matches(CharSequence rawPassword, String encodedPassword) {
-        log.info("rawPassword=[{}] encodedPassword=[{}]", rawPassword, encodedPassword);
-        return jasyptStringEncryptor.decrypt(encodedPassword).equals(rawPassword.toString());
-      }
-    };
+    //   @Override
+    //   public boolean matches(CharSequence rawPassword, String encodedPassword) {
+    //     log.info("rawPassword=[{}] encodedPassword=[{}]", rawPassword, encodedPassword);
+    //     return jasyptStringEncryptor.decrypt(encodedPassword).equals(rawPassword.toString());
+    //   }
+    // };
   }
 
 

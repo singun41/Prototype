@@ -1,7 +1,12 @@
 USE study;
 
+-- Jasypt
+-- INSERT INTO tbl_member (c_uuid, c_user_id, c_password, c_enabled)
+-- VALUES (ordered_uuid(), 'developer', 'SYWGhrR/Hx0jPABjKfi6Dw==', 1);
+
+-- Bcrypt
 INSERT INTO tbl_member (c_uuid, c_user_id, c_password, c_enabled)
-VALUES (ordered_uuid(), 'singun41', 'SYWGhrR/Hx0jPABjKfi6Dw==', 1);
+VALUES (ordered_uuid(), 'developer', '$2a$10$eEVWAZ7A7aXmT4EZtKam3.KrVqjDJC3XpylLq6hp/QK7wFjfX7CoG', 1);
 
 INSERT INTO tbl_member_role
 SELECT a.c_uuid, 'ADMIN' 
