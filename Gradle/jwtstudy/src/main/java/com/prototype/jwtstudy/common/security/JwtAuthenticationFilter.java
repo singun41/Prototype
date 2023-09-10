@@ -50,17 +50,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {   // Generic
           Authentication authentication = jwtProvider.getAuthentication(accessToken);
           SecurityContextHolder.getContext().setAuthentication(authentication);
         
-        } else {
+        } else {   // Access Token이 만료 또는 올바른 토큰이 아닌 경우
           String refreshToken = getRefreshToken(req);
           if(refreshToken == null) {
             log.warn("refresh token is null.");
+            res.addHeader("token-validation", "access-token-expired");   // Access Token이 만료된 경우에 전송됨.
           
-          } else {
+          } else {   // Refresh Token으로 재검증
             if(jwtProvider.validation(refreshToken)) {
               log.info("valid refresh token. access token regenerate.");
               Jwt jwt = jwtProvider.regenerate(refreshToken);
 
-              if(jwt != null) {
+              if(jwt != null) {   // Token이 제대로 발급되었으면 프론트로 전달
                 res.addHeader(ConfigProperties.STR_AUTHORIZATION, jwt.getAccessToken());
                 res.addHeader(ConfigProperties.STR_REFRESH_TOKEN, jwt.getRefreshToken());
 
@@ -71,9 +72,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {   // Generic
                 // res.addCookie(refreshToken);
               }
 
-            } else {
+            } else {   // Refresh Token이 만료 또는 올바른 토큰이 아닌 경우
               log.warn("refresh token is invalid.");
-              jwtProvider.removeCache(refreshToken);
+              res.addHeader("token-validation", "all-expired");   // Access Token, Refresh Token 모두 만료된 경우에 전송됨.
             }
           }
         }

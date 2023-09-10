@@ -39,7 +39,7 @@ import lombok.ToString;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 @Getter
-@ToString(callSuper = false, exclude = {"uuid"})
+@ToString(callSuper = false, exclude = {"uuid", "password"})
 public class Member extends EntityTimestamp {
   @Id
   @Column(name = "c_uuid", columnDefinition = ConfigProperties.COLUMN_DEFINITION_UUID, nullable = false, updatable = false)

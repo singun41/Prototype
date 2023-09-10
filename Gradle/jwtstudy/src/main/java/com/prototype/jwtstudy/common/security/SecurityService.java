@@ -8,9 +8,7 @@ import org.springframework.stereotype.Service;
 import com.prototype.jwtstudy.common.security.vo.Jwt;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SecurityService {
@@ -18,8 +16,7 @@ public class SecurityService {
   private final JwtProvider jwtProvider;
 
 
-  public Jwt login(String userId, String userPw) throws Exception {
-    log.info("userId=[{}] userPw=[{}]", userId, userPw);
+  Jwt login(String userId, String userPw) throws Exception {
     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userId, userPw);
     Authentication auth = authManagerBuilder.getObject().authenticate(authToken);
     Jwt jwt = jwtProvider.generate(auth);

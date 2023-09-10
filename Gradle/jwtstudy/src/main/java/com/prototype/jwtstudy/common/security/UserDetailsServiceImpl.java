@@ -23,14 +23,15 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
   @Override
   public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
-    log.info("userId=[{}]", userId);
+    log.info("User Id --> {}", userId);
 
     Optional<Member> member = jpaRepositoryMember.findByUserId(userId);
     if(member.isPresent()){
-      log.info("User founded. {}", member.get());
+      log.info("User found. {}", member.get());
       return new LoginUser(member.get());
     
     } else {
+      log.warn("User not found. User Id --> {}");
       throw new UsernameNotFoundException(userId);
     }
   }

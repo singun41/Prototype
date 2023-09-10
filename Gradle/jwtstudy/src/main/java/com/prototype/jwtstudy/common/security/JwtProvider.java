@@ -1,10 +1,11 @@
 package com.prototype.jwtstudy.common.security;
 
 import java.security.Key;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.jasypt.encryption.pbe.PBEStringCleanablePasswordEncryptor;
@@ -19,7 +20,8 @@ import org.springframework.stereotype.Component;
 import com.prototype.jwtstudy.common.config.ConfigProperties;
 import com.prototype.jwtstudy.common.etc.DateTimeGenerator;
 import com.prototype.jwtstudy.common.security.vo.Jwt;
-import com.prototype.jwtstudy.common.security.vo.UserInfo;
+import com.prototype.jwtstudy.domain.entity.Member;
+import com.prototype.jwtstudy.domain.repository.JpaRepositoryMember;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -48,7 +50,7 @@ public class JwtProvider {
   private final Key key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
   private final String strAuths = "auths";
   private final String bearer = "Bearer";
-  private final ConcurrentHashMap<String, UserInfo> cacheUserInfo = new ConcurrentHashMap<>(1000);
+  private final JpaRepositoryMember jpaRepositoryMember;
 
 
   Jwt generate(Authentication authentication) {   // 로그인 시 생성
@@ -60,9 +62,7 @@ public class JwtProvider {
     String encodedAuths = jasyptStringEncryptor.encrypt(authorities);
 
     String accessToken = generateAccessToken(encodedId, encodedAuths);
-    String refreshToken = generateRefreshToken();
-
-    caching(refreshToken, new UserInfo(encodedId, encodedAuths));
+    String refreshToken = generateRefreshToken(encodedId);
 
     return Jwt.builder()
     .grantType(bearer)
@@ -71,23 +71,20 @@ public class JwtProvider {
   }
 
 
-  Jwt regenerate(String refreshToken) {   // 로그인 이후 만료시 RefreshToken으로 재생성
-    UserInfo userInfo = cacheUserInfo.get(refreshToken);
+  Jwt regenerate(String refreshToken) {   // 로그인 이후 AccessToken 만료시 RefreshToken으로 재생성
+   log.info("regenerate() called.");
+    Claims claims = getClaims(refreshToken);
 
-    if(userInfo == null) {
-      log.warn("Cannot find the userInfo using the refreshToken.");
-      return null;
-    }
+    String encodedId = claims.getSubject();
+    String userId = jasyptStringEncryptor.decrypt(encodedId);
 
-    log.info("regenerate() called.");
-    String newAccessToken = generateAccessToken(userInfo.getEncodedId(), userInfo.getEncodedAuths());
-    String newRefreshToken = generateRefreshToken();
+    // 유저 권한이 변경되었을 수 있기 때문에 DB에서 다시 조회.
+    Optional<Member> member = jpaRepositoryMember.findByUserId(userId);
+    String authorities = member.get().getRoles().stream().map(s -> s.name()).collect(Collectors.joining(","));
+    String encodedAuths = jasyptStringEncryptor.encrypt(authorities);
 
-    // AccessToken을 새로 발급할 때 RefreshToken도 새로 발급해서 보안을 강화한다.
-    // 이 조건으로 유저는 현재 1개의 토큰만 로그인이 가능하다.
-    // 여러 기기에서 로그인할 수 있게 하려면 유저별로 AccessToken과 RefreshToken을 DB에 저장하도록 변경하면 된다.
-    removeCache(refreshToken);
-    caching(newRefreshToken, userInfo);
+    String newAccessToken = generateAccessToken(encodedId, encodedAuths);
+    String newRefreshToken = generateRefreshToken(encodedId);
 
     // AccessToken을 재생성할 때 RefreshToken도 같이 교체해줌으로써 계속 활동하는 유저는 로그인 상태가 연장된다.
     // RefreshToken이 만료될 때까지 활동이 없는 유저는 다시 로그인해야 한다.
@@ -99,19 +96,24 @@ public class JwtProvider {
 
 
   private String generateAccessToken(String encodedId, String encodedAuths) {
-    Date accessTokenExpDt = Date.from(DateTimeGenerator.now().plusMinutes(5).atZone(ConfigProperties.ZONE_ID).toInstant());
-    log.info("access token expired: {}", accessTokenExpDt);
+    LocalDateTime expDt = DateTimeGenerator.now().plusMinutes(1);
+    log.info("access token expired: {}", DateTimeGenerator.toString(expDt));
+
+    Date accessTokenExpDt = Date.from(expDt.atZone(ConfigProperties.ZONE_ID).toInstant());
 
     return Jwts.builder().setSubject(encodedId).claim(strAuths, encodedAuths)
     .setExpiration(accessTokenExpDt).signWith(key, SignatureAlgorithm.HS256).compact();
   }
 
 
-  private String generateRefreshToken() {
-    Date refreshTokenExpDt = Date.from(DateTimeGenerator.now().plusMinutes(20).atZone(ConfigProperties.ZONE_ID).toInstant());
-    log.info("refresh token expired: {}", refreshTokenExpDt);
+  private String generateRefreshToken(String encodedId) {
+    LocalDateTime expDt = DateTimeGenerator.now().plusMinutes(5);
+    log.info("refresh token expired: {}", expDt);
 
-    return Jwts.builder().setExpiration(refreshTokenExpDt).signWith(key, SignatureAlgorithm.HS256).compact();
+    Date refreshTokenExpDt = Date.from(expDt.atZone(ConfigProperties.ZONE_ID).toInstant());
+
+    return Jwts.builder().setSubject(encodedId)
+    .setExpiration(refreshTokenExpDt).signWith(key, SignatureAlgorithm.HS256).compact();
   }
 
 
@@ -131,23 +133,23 @@ public class JwtProvider {
     log.info("User Id --> {}", userId);
 
     // 인코딩된 유저 권한을 디코딩.
-    String strAuthsEnc = claims.get(strAuths).toString();
-    String strAuths = jasyptStringEncryptor.decrypt(strAuthsEnc);
-    log.info("Auths --> {}", strAuths);
+    String encodedAuths = claims.get(strAuths).toString();
+    String authorities = jasyptStringEncryptor.decrypt(encodedAuths);
+    log.info("Auths --> {}", authorities);
 
-    Collection<? extends GrantedAuthority> authorities =
-    Arrays.stream(strAuths.split(",")).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+    Collection<? extends GrantedAuthority> grantedAuthorities =
+    Arrays.stream(authorities.split(",")).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
 
     // DB를 조회하지 않고 token으로 유저를 구분할 수 있다. UserDetails 객체를 만들어서 Authentication 리턴
-    UserDetails principal = new User(userId, "", authorities);
-    return new UsernamePasswordAuthenticationToken(principal, "", authorities);
+    UserDetails principal = new User(userId, "", grantedAuthorities);
+    return new UsernamePasswordAuthenticationToken(principal, "", grantedAuthorities);
   }
 
 
-  private Claims getClaims(String accessToken) {
+  private Claims getClaims(String token) {
     try {
       log.info("getClaim() called.");
-      return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(accessToken).getBody();
+      return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
     
     } catch(ExpiredJwtException e) {
       log.error("getClaim() ExpiredJwtException. {}", e.getMessage());
@@ -191,17 +193,5 @@ public class JwtProvider {
       log.error("validation() Exception. {}", e.getMessage());
     }
     return false;
-  }
-
-
-  private void caching(String refreshToken, UserInfo userInfo) {
-    log.info("userInfo cached.");
-    cacheUserInfo.put(refreshToken, userInfo);
-  }
-
-
-  void removeCache(String refreshToken) {
-    cacheUserInfo.remove(refreshToken);
-    log.info("userInfo removed.");
   }
 }

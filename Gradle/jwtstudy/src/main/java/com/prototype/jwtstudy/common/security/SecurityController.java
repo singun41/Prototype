@@ -27,8 +27,6 @@ public class SecurityController {
 
   @PostMapping(ConfigProperties.URL_LOGIN)
   public ResponseEntity<?> login(@Validated @RequestBody ReqDtoLogin dto, BindingResult result, HttpServletResponse res) throws Exception {
-    log.info("{}", dto);
-
     if(result.hasErrors())
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result.getAllErrors().get(0));
 
@@ -42,7 +40,7 @@ public class SecurityController {
     // res.addCookie(accessToken);
     // res.addCookie(refreshToken);
 
-    log.info("User {} logged in succeed.", dto.getUserId());
+    log.info("User logged in. --> {}", dto.getUserId());
     return ResponseEntity.ok().body("success.");
   }
 }
