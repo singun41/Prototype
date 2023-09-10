@@ -22,4 +22,19 @@ public class SecurityService {
     Jwt jwt = jwtProvider.generate(auth);
     return jwt;
   }
+
+
+  String getNewAccessToken(String refreshToken) {
+    return jwtProvider.getNewAccessToken(refreshToken);
+  }
+
+
+  String getNewRefreshToken(String refreshToken) {
+    return jwtProvider.getNewRefreshToken(refreshToken);
+  }
+
+
+  String getTokenExpirationDatetime(String refreshToken) {
+    return jwtProvider.getTokenExpirationDatetime(refreshToken);
+  }
 }

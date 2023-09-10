@@ -32,7 +32,11 @@ public class SecurityConfig {
     .csrf(csrf -> csrf.disable())
     .authorizeHttpRequests(auth ->
       auth.antMatchers(
-        ConfigProperties.URL_LOGIN, ConfigProperties.URL_REGENERATE_REFRESH_TOKEN, "/free"
+        ConfigProperties.URL_LOGIN,
+        ConfigProperties.URL_NEW_ACCESS_TOKEN,
+        ConfigProperties.URL_NEW_REFRESH_TOKEN,
+        ConfigProperties.URL_TOKEN_EXPIRATION,
+        "/free"
       ).permitAll()
       .anyRequest().authenticated()
     )

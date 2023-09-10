@@ -13,7 +13,7 @@ public class ConfigProperties {
   public static final DateTimeFormatter FORMATTER_DATE = DateTimeFormatter.ISO_LOCAL_DATE;
 
   public static final String URL_LOGIN = "/login";
-  public static final String URL_REGENERATE_REFRESH_TOKEN = "/refresh-token";
-  public static final String STR_AUTHORIZATION = "authorization";
-  public static final String STR_REFRESH_TOKEN = "refresh-token";
+  public static final String URL_NEW_ACCESS_TOKEN = "/access-token";
+  public static final String URL_NEW_REFRESH_TOKEN = "/refresh-token";
+  public static final String URL_TOKEN_EXPIRATION = "/token/expiration";
 }

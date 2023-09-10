@@ -50,6 +50,7 @@ public class JwtProvider {
   private final Key key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
   private final String strAuths = "auths";
   private final String bearer = "Bearer";
+  private final String prefixBearer = "Bearer-";
   private final JpaRepositoryMember jpaRepositoryMember;
 
 
@@ -66,32 +67,55 @@ public class JwtProvider {
 
     return Jwt.builder()
     .grantType(bearer)
-    .accessToken(bearer + "-" + accessToken)
+    .accessToken(accessToken)
     .refreshToken(refreshToken).build();
   }
 
 
-  Jwt regenerate(String refreshToken) {   // 로그인 이후 AccessToken 만료시 RefreshToken으로 재생성
-   log.info("regenerate() called.");
-    Claims claims = getClaims(refreshToken);
+  String getNewAccessToken(String refreshToken) {   // 로그인 이후 AccessToken 만료시 RefreshToken으로 재생성
+    log.info("getNewAccessToken() called.");
+    if(validation(refreshToken)) {
+      Claims claims = getClaims(refreshToken);
+      String encodedId = claims.getSubject();
+      String userId = jasyptStringEncryptor.decrypt(encodedId);
 
-    String encodedId = claims.getSubject();
-    String userId = jasyptStringEncryptor.decrypt(encodedId);
+      // 유저 권한이 변경되었을 수 있기 때문에 DB에서 다시 조회.
+      Optional<Member> member = jpaRepositoryMember.findByUserId(userId);
+      String authorities = member.get().getRoles().stream().map(s -> s.name()).collect(Collectors.joining(","));
+      String encodedAuths = jasyptStringEncryptor.encrypt(authorities);
 
-    // 유저 권한이 변경되었을 수 있기 때문에 DB에서 다시 조회.
-    Optional<Member> member = jpaRepositoryMember.findByUserId(userId);
-    String authorities = member.get().getRoles().stream().map(s -> s.name()).collect(Collectors.joining(","));
-    String encodedAuths = jasyptStringEncryptor.encrypt(authorities);
+      String newAccessToken = generateAccessToken(encodedId, encodedAuths);
+      return newAccessToken;
+    
+    } else {
+      return null;
+    }
+  }
 
-    String newAccessToken = generateAccessToken(encodedId, encodedAuths);
-    String newRefreshToken = generateRefreshToken(encodedId);
 
-    // AccessToken을 재생성할 때 RefreshToken도 같이 교체해줌으로써 계속 활동하는 유저는 로그인 상태가 연장된다.
-    // RefreshToken이 만료될 때까지 활동이 없는 유저는 다시 로그인해야 한다.
-    return Jwt.builder()
-    .grantType(bearer)
-    .accessToken(bearer + "-" + newAccessToken)
-    .refreshToken(newRefreshToken).build();
+  String getNewRefreshToken(String refreshToken) {   // RefreshToken는 만료전에 갱신해야 함.
+    log.info("getNewRefreshToken() called.");
+    if(validation(refreshToken)) {
+      Claims claims = getClaims(refreshToken);
+      String encodedId = claims.getSubject();
+      String newRefreshToken = generateRefreshToken(encodedId);
+      return newRefreshToken;
+    
+    } else {
+      return null;
+    }
+  }
+
+
+  String getTokenExpirationDatetime(String token) {
+    Claims claims = getClaims(token);
+    if(claims != null) {
+      Date expDt = claims.getExpiration();
+      return LocalDateTime.ofInstant(expDt.toInstant(), ConfigProperties.ZONE_ID).format(ConfigProperties.FORMATTER_DATETIME);
+    
+    } else {
+      return null;
+    }
   }
 
 
@@ -101,13 +125,13 @@ public class JwtProvider {
 
     Date accessTokenExpDt = Date.from(expDt.atZone(ConfigProperties.ZONE_ID).toInstant());
 
-    return Jwts.builder().setSubject(encodedId).claim(strAuths, encodedAuths)
+    return prefixBearer + Jwts.builder().setSubject(encodedId).claim(strAuths, encodedAuths)
     .setExpiration(accessTokenExpDt).signWith(key, SignatureAlgorithm.HS256).compact();
   }
 
 
   private String generateRefreshToken(String encodedId) {
-    LocalDateTime expDt = DateTimeGenerator.now().plusMinutes(5);
+    LocalDateTime expDt = DateTimeGenerator.now().plusMinutes(10);
     log.info("refresh token expired: {}", expDt);
 
     Date refreshTokenExpDt = Date.from(expDt.atZone(ConfigProperties.ZONE_ID).toInstant());
@@ -149,7 +173,7 @@ public class JwtProvider {
   private Claims getClaims(String token) {
     try {
       log.info("getClaim() called.");
-      return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+      return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token.replace(prefixBearer, "")).getBody();
     
     } catch(ExpiredJwtException e) {
       log.error("getClaim() ExpiredJwtException. {}", e.getMessage());
@@ -174,7 +198,7 @@ public class JwtProvider {
   boolean validation(String token) {   // JwtAuthenticationFilter에서 호출.
     try {
       log.info("validation() called.");
-      Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+      Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token.replace(prefixBearer, ""));
       return true;
 
     } catch(ExpiredJwtException e) {
