@@ -57,12 +57,6 @@ public class JwtProvider {
 
   Jwt generate(Authentication authentication) {   // 로그인 시 생성
     log.info("generate() called.");
-    if(authentication == null)
-      return Jwt.builder()
-      .grantType(bearer)
-      .accessToken("")
-      .refreshToken("").build();
-
     String authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
 
     // user id를 인코딩해서 보낸다.
@@ -95,7 +89,7 @@ public class JwtProvider {
       return newAccessToken;
     
     } else {
-      return null;
+      return "Invalid token.";
     }
   }
 
@@ -109,7 +103,7 @@ public class JwtProvider {
       return newRefreshToken;
     
     } else {
-      return null;
+      return "Invalid token.";
     }
   }
 
@@ -121,13 +115,13 @@ public class JwtProvider {
       return LocalDateTime.ofInstant(expDt.toInstant(), ConfigProperties.ZONE_ID).format(ConfigProperties.FORMATTER_DATETIME);
     
     } else {
-      return null;
+      return "Invalid token.";
     }
   }
 
 
   private String generateAccessToken(String encodedId, String encodedAuths) {
-    LocalDateTime expDt = DateTimeGenerator.now().plusMinutes(2);
+    LocalDateTime expDt = DateTimeGenerator.now().plusMinutes(1);
     log.info("access token expired: {}", DateTimeGenerator.toString(expDt));
 
     Date accessTokenExpDt = Date.from(expDt.atZone(ConfigProperties.ZONE_ID).toInstant());

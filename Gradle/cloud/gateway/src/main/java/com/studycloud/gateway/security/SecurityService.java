@@ -17,7 +17,7 @@ public class SecurityService {
   private final JwtProvider jwtProvider;
 
 
-  Mono<ResponseEntity<ResDtoToken>> login(String userId, String userPw) throws Exception {
+  Mono<ResponseEntity<?>> login(String userId, String userPw) throws Exception {
     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userId, userPw);
     return reactiveAuthManager.authenticate(authToken).map(
       jwtProvider::generate
@@ -33,17 +33,17 @@ public class SecurityService {
   }
 
 
-  Mono<ResponseEntity<String>> getNewAccessToken(String refreshToken) {
+  Mono<ResponseEntity<?>> getNewAccessToken(String refreshToken) {
     return Mono.just(ResponseEntity.ok(jwtProvider.getNewAccessToken(refreshToken)));
   }
 
 
-  Mono<ResponseEntity<String>> getNewRefreshToken(String refreshToken) {
+  Mono<ResponseEntity<?>> getNewRefreshToken(String refreshToken) {
     return Mono.just(ResponseEntity.ok(jwtProvider.getNewRefreshToken(refreshToken)));
   }
 
 
-  Mono<ResponseEntity<String>> getTokenExpirationDatetime(String refreshToken) {
+  Mono<ResponseEntity<?>> getTokenExpirationDatetime(String refreshToken) {
     return Mono.just(ResponseEntity.ok(jwtProvider.getTokenExpirationDatetime(refreshToken)));
   }
 }
