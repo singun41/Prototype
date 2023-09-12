@@ -1,0 +1,34 @@
+spring:
+  profiles:
+    include:
+    - ${ENV_STUDY}
+  
+  application:
+    name: service-1
+  
+  main:
+    web-application-type: servlet
+    banner-mode: console
+
+
+server:
+  servlet:
+    context-path: /
+    encoding:
+      charset: UTF-8
+      force: true
+
+
+logging:
+  level:
+    root: info
+
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}-${spring.cloud.client.ip-address}
+    hostname: study-service-1

@@ -1,0 +1,25 @@
+spring:
+  profiles:
+    include:
+    - ${ENV_STUDY}
+
+  application:
+    name: discovery
+  
+  main:
+    web-application-type: servlet
+    banner-mode: console
+
+
+logging:
+  level:
+    root: info
+
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}-${spring.cloud.client.ip-address}
+    hostname: study-discovery

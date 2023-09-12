@@ -1,0 +1,25 @@
+spring:
+  config:
+    activate:
+      on-profile:
+      - dev
+
+  devtools:
+    livereload:
+      enabled: true
+
+  output:
+    ansi:
+      enabled: always
+
+
+server:
+  port: 8761
+  servlet:
+    session:
+      cookie:
+        http-only: false
+        secure: false
+  
+  http2:
+    enabled: false

@@ -1,0 +1,47 @@
+spring:
+  profiles:
+    include:
+    - ${ENV_STUDY}
+  
+  application:
+    name: gateway
+
+  main:
+    web-application-type: reactive
+    banner-mode: console
+
+  cloud:
+    gateway:
+      default-filters:
+      - name: JwtAuthenticationFilter
+        args:
+          preLogger: true
+          postLogger: true
+      routes:
+      - id: service-1
+        uri: lb://SERVICE-1
+        predicates:
+          - Path=/service-1/**
+        filters:
+          - RewritePath=/service-1/?(?<segment>.*), /$\{segment}
+
+      - id: service-2
+        uri: lb://SERVICE-2
+        predicates:
+          - Path=/service-2/**
+        filters:
+          - RewritePath=/service-2/?(?<segment>.*), /$\{segment}
+
+logging:
+  level:
+    root: info
+
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}-${spring.cloud.client.ip-address}
+    hostname: study-gateway
