@@ -8,6 +8,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -23,7 +24,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {   // Generic
   private final JwtProvider jwtProvider;
   private final String headerTryLogin = "Try-Login";
   private final String keyLogin = "kfV2tOtqOxWMHz55";
-  private final String keyAuthorization = "Authorization";
 
 
   @Override
@@ -68,7 +68,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {   // Generic
 
   private String getTokenFromHeader(HttpServletRequest req) {
     log.info("getTokenFromHeader() called.");
-    String token = req.getHeader(keyAuthorization);
+    String token = req.getHeader(HttpHeaders.AUTHORIZATION);
 
     if(token == null) {
       return getTokenFromCookie(req);
@@ -86,7 +86,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {   // Generic
       return null;
     
     for(Cookie cookie : cookies) {
-      if(cookie.getName().equals(keyAuthorization))
+      if(cookie.getName().equals(HttpHeaders.AUTHORIZATION))
         return cookie.getValue();
     }
     return null;
