@@ -34,26 +34,22 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
       ServerHttpRequest req = exchange.getRequest();
       ServerHttpResponse res = exchange.getResponse();
 
-      if(!containsAuthorization(req)) {
+      if(!containsAuthorization(req))
         return handleUnAuthorized(exchange);
-      }
 
-      if(!jwtProvider.validation(getToken(req))) {
+      if(!jwtProvider.validation(getToken(req)))
         return handleUnAuthorized(exchange);
-      }
       
       if(config.isPreLogger()) {
         log.info("[Req-Id : {}] [Request Path --> {}]", req.getId(), req.getPath());
-        if(!req.getQueryParams().isEmpty()) {
+        if(!req.getQueryParams().isEmpty())
           log.info("[Req-Id : {}] [Quear param --> {}]", req.getId(), req.getQueryParams());
-        }
       }
       addAuthorizationHeaders(req);
 
       return chain.filter(exchange).then(Mono.fromRunnable(() -> {
-        if(config.isPostLogger()) {
+        if(config.isPostLogger())
           log.info("[Req-Id : {}] [Response Status Code --> {}]", req.getId(), res.getStatusCode());
-        }
       }));
     });
   }

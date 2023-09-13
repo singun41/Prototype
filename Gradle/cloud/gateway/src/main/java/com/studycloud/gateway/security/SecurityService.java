@@ -21,15 +21,13 @@ public class SecurityService {
     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userId, userPw);
     return reactiveAuthManager.authenticate(authToken).map(
       jwtProvider::generate
-    ).map(
-      jwt -> ResponseEntity.ok(
-        ResDtoToken.builder()
-        .access(jwt.getAccessToken())
-        .refresh(jwt.getRefreshToken())
-        .message("success")
-        .build()
-      )
-    );
+    ).map(jwt -> ResponseEntity.ok(
+      ResDtoToken.builder()
+      .access(jwt.getAccessToken())
+      .refresh(jwt.getRefreshToken())
+      .message("success")
+      .build()
+    ));
   }
 
 
