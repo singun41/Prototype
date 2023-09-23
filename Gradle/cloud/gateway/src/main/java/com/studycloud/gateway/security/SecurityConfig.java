@@ -12,11 +12,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
-import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
 @Configuration
-@RequiredArgsConstructor
 public class SecurityConfig {
   @Bean
   SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
