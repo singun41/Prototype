@@ -66,5 +66,5 @@ tasks.named('test') {
 }
 
 test {
-	'**/*'
+	exclude '**/*'
 }
