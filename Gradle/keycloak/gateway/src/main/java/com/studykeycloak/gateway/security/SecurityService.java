@@ -20,11 +20,15 @@ import reactor.core.publisher.Mono;
 @Service
 @RequiredArgsConstructor
 public class SecurityService {
-  private final String urlKeycloak = "http://keycloak-2203.local-cubi5.com";
-  private final String keycloakRealmName = "keycloak-2203";
+  // private final String urlKeycloak = "http://keycloak-2203.local-cubi5.com";
+  // private final String keycloakRealmName = "keycloak-2203";
+  private final String urlKeycloak = "http://keycloak-1611.local-cubi5.com/auth";
+  private final String keycloakRealmName = "keycloak-1611";
+
   private final String urlToken = new StringBuilder(urlKeycloak).append("/realms/").append(keycloakRealmName).append("/protocol/openid-connect/token").toString();
   private final String clientId = "dev";
-  private final String clientSecret = "PJOkYn6dG73CP7BW2lYW3DOWrM67vQwO";
+  // private final String clientSecret = "PJOkYn6dG73CP7BW2lYW3DOWrM67vQwO";   // keycloak-2203
+  private final String clientSecret = "3g5jQQoRrOyilFOV00Mhq8Ww6wqo8Rmn";   // keycloak-1611
   private final String grantTypePassword = "password";
   private final String grantTypeRefreshToken = "refresh_token";
 
