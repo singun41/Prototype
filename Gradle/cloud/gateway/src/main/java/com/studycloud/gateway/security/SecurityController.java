@@ -1,7 +1,6 @@
 package com.studycloud.gateway.security;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +20,7 @@ public class SecurityController {
 
 
   @PostMapping(ConfigProperties.URL_LOGIN)
-  public Mono<ResponseEntity<?>> login(@Validated @RequestBody ReqDtoLogin dto) throws Exception {
+  public Mono<ResponseEntity<?>> login(@RequestBody ReqDtoLogin dto) throws Exception {
     return securityService.login(dto.getUserId(), dto.getUserPw());
   }
 
