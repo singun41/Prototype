@@ -19,8 +19,7 @@ public class SecurityConfig {
   @Bean
   SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
     return http
-    .exceptionHandling(exceptionHandlingSpec ->
-      exceptionHandlingSpec
+    .exceptionHandling(exceptionHandlingSpec -> exceptionHandlingSpec
       .authenticationEntryPoint((exchange, ex) -> Mono.fromRunnable(() -> exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED)))
       .accessDeniedHandler((exchange, denied) -> Mono.fromRunnable(() -> exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN)))
     )

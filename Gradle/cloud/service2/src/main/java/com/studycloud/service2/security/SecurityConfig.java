@@ -16,8 +16,8 @@ public class SecurityConfig {
     .httpBasic(httpBasic -> httpBasic.disable())
     .formLogin(formLogin -> formLogin.disable())
     .csrf(csrf -> csrf.disable())
-    .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
-    .sessionManagement(sessionMngt -> sessionMngt.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+    .authorizeHttpRequests(t -> t.anyRequest().permitAll())
+    .sessionManagement(t -> t.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
     .addFilterBefore(new CustomFilter(), UsernamePasswordAuthenticationFilter.class)
     .build();
   }

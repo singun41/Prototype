@@ -1,0 +1,32 @@
+spring:
+  config:
+    activate:
+      on-profile:
+      - test
+
+  devtools:
+    livereload:
+      enabled: false
+
+  output:
+    ansi:
+      enabled: never
+
+
+server:
+  port: 8080
+  servlet:
+    session:
+      cookie:
+        http-only: false
+        secure: false
+  
+  http2:
+    enabled: false
+
+
+eureka:
+  client:
+    enabled: true
+    service-url:
+      defaultZone: ${URL_REGISTRY}

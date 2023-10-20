@@ -19,6 +19,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class CustomFilter extends OncePerRequestFilter {
   @Override
   public void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws IOException, ServletException {
+    if(req.getRequestURI().contains("/actuator")) {
+      chain.doFilter(req, res);
+      return;
+    }
+
     String userId = req.getHeader("X-User-Id");
     String strRole = req.getHeader("X-User-Role");
     String[] arrRole = strRole.split(",");
