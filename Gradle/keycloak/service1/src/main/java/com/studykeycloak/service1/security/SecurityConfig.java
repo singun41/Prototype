@@ -21,9 +21,9 @@ public class SecurityConfig {
     .httpBasic(httpBasic -> httpBasic.disable())
     .formLogin(formLogin -> formLogin.disable())
     .csrf(csrf -> csrf.disable())
-    .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
-    .oauth2ResourceServer(customizer -> customizer.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthConverter)))
-    .sessionManagement(sessionMngt -> sessionMngt.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+    .authorizeHttpRequests(t -> t.anyRequest().permitAll())
+    .oauth2ResourceServer(t -> t.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthConverter)))
+    .sessionManagement(t -> t.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
     .build();
   }
 
