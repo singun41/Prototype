@@ -27,6 +27,17 @@ public class RestControllerApp {
   }
 
 
+  @GetMapping("/user")
+  @PreAuthorize(ConfigProperties.USER_ROLE_DEFAULT)
+  public ResponseEntity<?> accessUser() {
+    log.info("userId=[{}]", requestUtils.getUserId());
+
+    log.info("endpoint 'user' called.");
+    ReqDto dto = ReqDto.builder().message("Hello User.").build();
+    return ResponseEntity.ok(dto);
+  }
+
+
   @GetMapping("/manager")
   @PreAuthorize(ConfigProperties.USER_ROLE_MANAGER)
   public ResponseEntity<?> accessManager() {
