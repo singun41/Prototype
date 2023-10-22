@@ -5,6 +5,9 @@ import org.keycloak.admin.client.KeycloakBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
 @Configuration
 public class ConfigKeycloak {
   public final static String URL_SERVER = "http://keycloak-2203.local-cubi5.com";
@@ -40,5 +43,17 @@ public class ConfigKeycloak {
     .username(username)
     .password(password)
     .build();
+  }
+
+
+  @AllArgsConstructor
+  @Getter
+  public enum PreparedRole {
+    USER(PREPARED_ROLE_USER_ID, PREPARED_ROLE_USER_NAME),
+    MANAGER(PREPARED_ROLE_MANAGER_ID, PREPARED_ROLE_MANAGER_NAME),
+    ADMIN(PREPARED_ROLE_ADMIN_ID, PREPARED_ROLE_ADMIN_NAME);
+
+    private final String id;
+    private final String title;
   }
 }
