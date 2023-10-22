@@ -13,6 +13,13 @@ spring:
   cloud:
     gateway:
       routes:
+      - id: service-user
+        uri: lb://SERVICE-USER
+        predicates:
+          - Path=/user/**
+        filters:
+          - RewritePath=/service-user/?(?<segment>.*), /$\{segment}
+
       - id: service-1
         uri: lb://SERVICE-1
         predicates:
@@ -41,3 +48,14 @@ eureka:
     prefer-ip-address: true
     instance-id: ${spring.application.name}-${spring.cloud.client.ip-address}
     hostname: study-gateway
+
+
+management:
+  endpoint:
+    shutdown:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include:
+        - "*"
