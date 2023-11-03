@@ -20,6 +20,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.prototype.jwtstudy.common.config.ConfigProperties;
 import com.prototype.jwtstudy.common.entity.EntityTimestamp;
@@ -50,7 +51,7 @@ public class Member extends EntityTimestamp {
   @Column(name = "c_user_id", length = 50, nullable = false, updatable = false, unique = true)
   private String userId;
 
-  @Column(name = "c_password", length = 50, nullable = false, updatable = false, unique = true)
+  @Column(name = "c_password", length = 100, nullable = false)
   private String password;
 
   @Column(name = "c_enabled", nullable = false, updatable = true)
@@ -61,4 +62,15 @@ public class Member extends EntityTimestamp {
   @Column(name = "c_value")
   @Enumerated(EnumType.STRING)
   private Set<MemberRole> roles;
+
+
+  public boolean updatePassword(String oldRawPassword, String newRawPassword, PasswordEncoder passwordEncoder) {
+    String oldPassword = passwordEncoder.encode(oldRawPassword);
+
+    if(passwordEncoder.matches(this.password, oldPassword)) {
+      this.password = passwordEncoder.encode(newRawPassword);
+      return true;
+    }
+    return false;
+  }
 }
