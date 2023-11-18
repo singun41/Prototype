@@ -8,10 +8,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 public class ReqDtoUpdate {
-  @NotNull
   @NotBlank
   private String username;
 
   @NotNull
   private Boolean enabled;
+
+  @NotBlank
+  private String password;
 }

@@ -15,14 +15,14 @@ spring:
 
 server:
   port: 8090
+  http2:
+    enabled: false
+  
   servlet:
     session:
       cookie:
         http-only: false
         secure: false
-  
-  http2:
-    enabled: false
 
 
 eureka:

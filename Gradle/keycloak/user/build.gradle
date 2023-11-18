@@ -28,8 +28,13 @@ ext {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
-	implementation 'org.keycloak:keycloak-admin-client:22.0.3'
+	
+	implementation 'org.springdoc:springdoc-openapi-ui:1.7.0'
+	implementation 'org.springdoc:springdoc-openapi-webmvc-core:1.7.0'
+
+	implementation 'org.keycloak:keycloak-admin-client:22.0.5'
 	implementation 'jakarta.ws.rs:jakarta.ws.rs-api:3.1.0'
 	// implementation 'com.google.code.gson:gson:2.10.1'
 

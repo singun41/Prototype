@@ -40,15 +40,29 @@ eureka:
   instance:
     prefer-ip-address: true
     instance-id: ${spring.application.name}-${spring.cloud.client.ip-address}
-    hostname: study-service-1
+    hostname: service-1
 
 
 management:
   endpoint:
     shutdown:
-      enabled: true
+      enabled: false
   endpoints:
     web:
       exposure:
         include:
         - "*"
+
+
+springdoc:
+  cache:
+    disabled: false
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: false
+    # path: /swagger-ui.html
+    # urls:
+    #   - name: service-1
+    #     url: /v3/api-docs

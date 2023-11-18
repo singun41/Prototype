@@ -12,27 +12,42 @@ spring:
 
   cloud:
     gateway:
+      # default-filters:
+      #   - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+      # globalcors:
+      #   cors-configurations:
+      #     '[/**]':
+      #       allowedOrigins:
+      #         - http://172.30.1.50:8080
+      #         - http://172.30.1.50:8090
+      #         - http://172.30.1.50:9990
+      #         - http://localhost:8080
+      #         - http://localhost:8090
+      #         - http://localhost:9990
+      #       allow-credentials: true
+      #       allowedHeaders: '*'
+      #       allowedMethods: '*'
       routes:
       - id: service-user
         uri: lb://SERVICE-USER
         predicates:
-          - Path=/user/**
+          - Path=/service-user/**, /service-user/v3/api-docs/**
         filters:
-          - RewritePath=/service-user/?(?<segment>.*), /$\{segment}
+          - RewritePath=/service-user/(?<path>.*), /$\{path}
 
       - id: service-1
         uri: lb://SERVICE-1
         predicates:
-          - Path=/service-1/**
+          - Path=/service-1/**, /service-1/v3/api-docs/**
         filters:
-          - RewritePath=/service-1/?(?<segment>.*), /$\{segment}
+          - RewritePath=/service-1/(?<path>.*), /$\{path}
 
       - id: service-2
         uri: lb://SERVICE-2
         predicates:
           - Path=/service-2/**
         filters:
-          - RewritePath=/service-2/?(?<segment>.*), /$\{segment}
+          - RewritePath=/service-2/(?<path>.*), /$\{path}
 
 
 logging:
@@ -53,9 +68,29 @@ eureka:
 management:
   endpoint:
     shutdown:
-      enabled: true
+      enabled: false
   endpoints:
     web:
       exposure:
         include:
         - "*"
+
+
+springdoc:
+  webjars:
+    prefix: #remove /webjars (not single slash('/'). just empty.)
+  cache:
+    disabled: false
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    # path: /swagger-ui.html
+    urls:
+      - name: gateway
+        url: /v3/api-docs
+      - name: service-user
+        url: /service-user/v3/api-docs
+      - name: service-1
+        url: /service-1/v3/api-docs
