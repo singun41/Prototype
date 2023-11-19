@@ -45,7 +45,10 @@ public class SecurityService {
     /*
       22.0.3, 22.0.5 두 버전에서 동일한 버그인 것 같은데
       현재 파라미터 username으로 보내면 키클락에서 userId=null 이렇게 메시지가 나오면서 로그인이 되지 않는다.
-      thunder-client 확장 프로그램으로 api를 직접 호출할 때는 전혀 문제가 없는데 WebClient로 보내면 이런 이상한 현상이 발생하고 있다.
+
+      vscode thunder-client 확장 프로그램 같은 API 툴로 keycloak의 admin API를 직접 호출할 때는 전혀 문제가 없는데
+      아래처럼 WebClient로 보내면 이런 이상한 현상이 발생하고 있다.
+
       최초 키클락을 테스트할 때는 문제가 없었는데 지금은 왜 발생하는지 이유를 확인하지 못했다.
       그래서 userId 파라미터를 추가해서 보내야 로그인이 된다.
     */

@@ -45,35 +45,24 @@ public class ServiceKeycloak {
   
   public ResponseEntity<?> addNewUser(ReqDtoNewUser dto) {
     /*
-      22.0.3, 22.0.5 버전 두 개 모두 동일.
-      테스트 완료.
+      버전 22.0.3, 22.0.5 테스트 완료.
       
       유저 등록시 클라이언트의 role을 지정해서 생성할 수 없다.
       그래서 먼저 유저의 기본정보를 등록하고 바로 이어서 유저의 role을 client의 role로 업데이트한다.
       client role은 미리 등록되어 있어야 한다.
     */
+
+    // 유저 계정 생성
     UserRepresentation user = new UserRepresentation();
     user.setUsername(dto.getUsername());
     user.setEnabled(true);
 
-
-    /* ----- ----- ----- ----- ----- 이상하게 동작하는 부분 ----- ----- ----- ----- ----- */
-    /*
-      vscode 확장프로그램 thunder-client를 이용해서 API를 호출하면 이 부분에서 NPE가 발생한다.
-      도커 컨테이너에서 로그를 보면 아래 메시지가 나온다.
-      "org.keycloak.representations.idm.CredentialRepresentation.getHashIterations()" is null
-      
-      근데 이상한건 유저 등록을 완료하고 별도로 만든 맨 아래의 update() 메서드를 호출해서 패스워드를 설정하면 에러없이 진행된다.
-      형식은 동일한데 여기서만 발생.
-      
-      근데 SpringDoc Swagger에서 API를 호출하면 아무 에러없이 잘 된다.
-    */
+    // 패스워드 설정
     CredentialRepresentation password = new CredentialRepresentation();
     password.setType(CredentialRepresentation.PASSWORD);
     password.setValue(dto.getPassword());
     password.setTemporary(false);
     user.setCredentials(Collections.singletonList(password));
-    /* ----- ----- ----- ----- ----- 이상하게 동작하는 부분 ----- ----- ----- ----- ----- */
 
 
     /*
@@ -100,12 +89,12 @@ public class ServiceKeycloak {
       , ""
     );
 
-    // user 등록 완료. 기본 role 등록.
+    // 유저 생성 완료.
     UserResource userResource = usersResource.get(userUuid);
     UserRepresentation addedUser = userResource.toRepresentation();
-
     log.info("username=[{}] added. --> userUuid=[{}]", addedUser.getUsername(), userUuid);
 
+    // 유저의 client_role 할당하고 성공 메시지 리턴.
     return addRoleDefault(addedUser);
   }
 
