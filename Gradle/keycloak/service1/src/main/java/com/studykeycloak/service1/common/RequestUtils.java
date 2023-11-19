@@ -20,7 +20,7 @@ public class RequestUtils {
 
   public String getUserId() {
     Principal principal = getCurrentRequest().getUserPrincipal();
-    log.info("{}", principal);
-    return principal.getName();
+    log.info("principal=[{}]", principal);
+    return principal.getName();   // 유저의 uuid 값이 나온다.
   }
 }

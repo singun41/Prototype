@@ -7,12 +7,12 @@ import java.util.List;
 // import java.util.Map;
 
 import org.keycloak.admin.client.Keycloak;
-// import org.keycloak.admin.client.resource.ClientResource;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.RoleScopeResource;
 import org.keycloak.admin.client.resource.RolesResource;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
+import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 // import com.google.gson.Gson;
 import com.studykeycloak.user.config.ConfigKeycloak;
 import com.studykeycloak.user.dto.request.ReqDtoNewUser;
+import com.studykeycloak.user.dto.request.ReqDtoRole;
 import com.studykeycloak.user.dto.request.ReqDtoUpdate;
 
 // import jakarta.ws.rs.client.Client;
@@ -32,6 +33,8 @@ import com.studykeycloak.user.dto.request.ReqDtoUpdate;
 // import jakarta.ws.rs.client.Entity;
 // import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.Response;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 // import jakarta.ws.rs.core.UriBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +44,19 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ServiceKeycloak {
   private final Keycloak keycloak;
+
+
+  private enum RoleUpdateType {
+    ADD, REMOVE;
+  }
+
+  @AllArgsConstructor
+  @Getter
+  public enum RealmClient {
+    TEST_A("test-a"), TEST_B("test-b");
+
+    private String title;
+  }
   
   
   public ResponseEntity<?> addNewUser(ReqDtoNewUser dto) {
@@ -94,45 +110,47 @@ public class ServiceKeycloak {
     UserRepresentation addedUser = userResource.toRepresentation();
     log.info("username=[{}] added. --> userUuid=[{}]", addedUser.getUsername(), userUuid);
 
-    // 유저의 client_role 할당하고 성공 메시지 리턴.
-    return addRoleDefault(addedUser);
+    return ResponseEntity.ok().build();
   }
 
 
-  private ResponseEntity<?> addRoleDefault(UserRepresentation user) {
-    return updateRole(RoleUpdateType.ADD, user, ConfigKeycloak.PreparedRole.USER);
+  public ResponseEntity<?> addRoleUser(ReqDtoRole dto, RealmClient client) {
+    return addRole(dto, ConfigKeycloak.ClientRoles.USER, client);
+  }
+  public ResponseEntity<?> removeRoleUser(ReqDtoRole dto, RealmClient client) {
+    return removeRole(dto, ConfigKeycloak.ClientRoles.USER, client);
   }
 
 
-  public ResponseEntity<?> addRoleManager(ReqDtoUpdate dto) {
-    return addRole(dto, ConfigKeycloak.PreparedRole.MANAGER);
+  public ResponseEntity<?> addRoleManager(ReqDtoRole dto, RealmClient client) {
+    return addRole(dto, ConfigKeycloak.ClientRoles.MANAGER, client);
   }
-  public ResponseEntity<?> removeRoleManager(ReqDtoUpdate dto) {
-    return removeRole(dto, ConfigKeycloak.PreparedRole.MANAGER);
-  }
-
-
-  public ResponseEntity<?> addRoleDirector(ReqDtoUpdate dto) {
-    return addRole(dto, ConfigKeycloak.PreparedRole.DIRECTOR);
-  }
-  public ResponseEntity<?> removeRoleDirector(ReqDtoUpdate dto) {
-    return removeRole(dto, ConfigKeycloak.PreparedRole.DIRECTOR);
+  public ResponseEntity<?> removeRoleManager(ReqDtoRole dto, RealmClient client) {
+    return removeRole(dto, ConfigKeycloak.ClientRoles.MANAGER, client);
   }
 
 
-  public ResponseEntity<?> addRoleAdmin(ReqDtoUpdate dto) {
-    return addRole(dto, ConfigKeycloak.PreparedRole.ADMIN);
+  public ResponseEntity<?> addRoleDirector(ReqDtoRole dto, RealmClient client) {
+    return addRole(dto, ConfigKeycloak.ClientRoles.DIRECTOR, client);
   }
-  public ResponseEntity<?> removeRoleAdmin(ReqDtoUpdate dto) {
-    return removeRole(dto, ConfigKeycloak.PreparedRole.ADMIN);
+  public ResponseEntity<?> removeRoleDirector(ReqDtoRole dto, RealmClient client) {
+    return removeRole(dto, ConfigKeycloak.ClientRoles.DIRECTOR, client);
   }
 
 
-  private ResponseEntity<?> addRole(ReqDtoUpdate dto, ConfigKeycloak.PreparedRole role) {
+  public ResponseEntity<?> addRoleAdmin(ReqDtoRole dto, RealmClient client) {
+    return addRole(dto, ConfigKeycloak.ClientRoles.ADMIN, client);
+  }
+  public ResponseEntity<?> removeRoleAdmin(ReqDtoRole dto, RealmClient client) {
+    return removeRole(dto, ConfigKeycloak.ClientRoles.ADMIN, client);
+  }
+
+
+  private ResponseEntity<?> addRole(ReqDtoRole dto, ConfigKeycloak.ClientRoles role, RealmClient client) {
     List<UserRepresentation> userRepresentations = keycloak.realms().realm(ConfigKeycloak.MY_REALM).users().search(dto.getUsername());
     if(userRepresentations.size() > 0) {
       UserRepresentation user = userRepresentations.get(0);
-      return updateRole(RoleUpdateType.ADD, user, role);
+      return updateRole(RoleUpdateType.ADD, user, role, client);
     
     } else {
       return ResponseEntity.badRequest().body("User not exists.");
@@ -140,11 +158,11 @@ public class ServiceKeycloak {
   }
 
 
-  private ResponseEntity<?> removeRole(ReqDtoUpdate dto, ConfigKeycloak.PreparedRole role) {
+  private ResponseEntity<?> removeRole(ReqDtoRole dto, ConfigKeycloak.ClientRoles role, RealmClient client) {
     List<UserRepresentation> userRepresentations = keycloak.realms().realm(ConfigKeycloak.MY_REALM).users().search(dto.getUsername());
     if(userRepresentations.size() > 0) {
       UserRepresentation user = userRepresentations.get(0);
-      return updateRole(RoleUpdateType.REMOVE, user, role);
+      return updateRole(RoleUpdateType.REMOVE, user, role, client);
     
     } else {
       return ResponseEntity.badRequest().body("User not exists.");
@@ -152,14 +170,18 @@ public class ServiceKeycloak {
   }
 
 
-  private ResponseEntity<?> updateRole(RoleUpdateType type, UserRepresentation user, ConfigKeycloak.PreparedRole role) {
+  private ResponseEntity<?> updateRole(RoleUpdateType type, UserRepresentation user, ConfigKeycloak.ClientRoles role, RealmClient client) {
     if(user == null)
       return ResponseEntity.badRequest().body("User not exists.");
 
     RealmResource realmResource = keycloak.realm(ConfigKeycloak.MY_REALM);
     UserResource userResource = realmResource.users().get(user.getId());
-    RolesResource rolesResource = realmResource.clients().get(ConfigKeycloak.MY_CLIENT_ID).roles();
-    RoleScopeResource roleScopeResource = userResource.roles().clientLevel(ConfigKeycloak.MY_CLIENT_ID);
+
+    ClientRepresentation clientRepresentation =
+    realmResource.clients().findAll().stream().filter(e -> e.getClientId().equals(client.getTitle())).findAny().get();
+
+    RolesResource rolesResource = realmResource.clients().get(clientRepresentation.getId()).roles();
+    RoleScopeResource roleScopeResource = userResource.roles().clientLevel(clientRepresentation.getId());
 
     List<RoleRepresentation> targetRoles = new ArrayList<>();
 
@@ -180,65 +202,10 @@ public class ServiceKeycloak {
       }
     }
     return ResponseEntity.ok().build();
-
-
-    // 아래 코드는 직접 구현 방식
-    // String accessToken = "Bearer " + keycloak.tokenManager().getAccessTokenString();
-    // List<Map<String, String>> listMap = Arrays.asList(Map.of("id", role.getId(), "name", role.getTitle()));
-
-    // Client client = ClientBuilder.newClient();
-    // UriBuilder uriBuilder =
-    // UriBuilder.fromPath(ConfigKeycloak.URL_SERVER)
-    // .path("/admin/realms/").path(ConfigKeycloak.MY_REALM)
-    // .path("/users/").path(user.getId()).path("/role-mappings/clients/").path(ConfigKeycloak.MY_CLIENT_ID);
-
-    // WebTarget target = client.target(uriBuilder);
-
-    // /*
-    //   role은 json 배열 형식이어야 한다.
-
-    //   샘플
-    //   [
-    //     {
-    //       "id": "e94a7f56-56ad-4c44-84ca-97444b693a68",
-    //       "name": "manager",
-    //       "description": "",
-    //       "composite": false,
-    //       "clientRole": true,
-    //       "containerId": "bdbd78da-ac28-4f19-bc78-54ea35a81781"
-    //     },
-    //     {
-    //       "id": "2427bb8d-e4bd-40b3-b7e4-6eacdbadbfe6",
-    //       "name": "user",
-    //       "description": "",
-    //       "composite": false,
-    //       "clientRole": true,
-    //       "containerId": "bdbd78da-ac28-4f19-bc78-54ea35a81781"
-    //     }
-    //   ]
-
-    //   id와 name은 필수이고, 나머지는 없어도 된다.
-    // */
-    
-    // Gson gson = new Gson();
-    // String clientRoleJsonString = gson.toJson(listMap);
-    // Entity<String> entityRoles = Entity.json(clientRoleJsonString);
-
-    // // role update 성공시 204 SUCCESSFUL
-    // Response updateRoleResponse = switch(type) {
-    //   case ADD -> target.request().header(HttpHeaders.AUTHORIZATION, accessToken).post(entityRoles);
-    //   case REMOVE -> target.request().header(HttpHeaders.AUTHORIZATION, accessToken).method(HttpMethod.DELETE.name(), entityRoles);
-    // };
-    // return ResponseEntity.status(updateRoleResponse.getStatus()).body(updateRoleResponse.readEntity(String.class));
   }
 
 
-  private enum RoleUpdateType {
-    ADD, REMOVE;
-  }
-
-
-  public ResponseEntity<?> update(ReqDtoUpdate dto) {
+  public ResponseEntity<?> updateUserInfo(ReqDtoUpdate dto) {
     UsersResource usersResource = keycloak.realm(ConfigKeycloak.MY_REALM).users();
     List<UserRepresentation> userRepresentations = usersResource.search(dto.getUsername());
 
@@ -261,22 +228,6 @@ public class ServiceKeycloak {
       // userResource.resetPassword(password);
 
       return ResponseEntity.ok().build();
-
-      
-      // 아래 코드는 직접 구현 방식
-      // Client client = ClientBuilder.newClient();
-      // UriBuilder uriBuilder =
-      // UriBuilder.fromPath(ConfigKeycloak.URL_SERVER)
-      // .path("/admin/realms/").path(ConfigKeycloak.MY_REALM)
-      // .path("/users/").path(user.getId());
-
-      // WebTarget target = client.target(uriBuilder);
-      // String accessToken = "Bearer " + keycloak.tokenManager().getAccessTokenString();
-      // Gson gson = new Gson();
-      // Entity<String> userRepresentationJsonString = Entity.json(gson.toJson(user));
-
-      // Response updateResponse = target.request().header(HttpHeaders.AUTHORIZATION, accessToken).put(userRepresentationJsonString);
-      // return ResponseEntity.status(updateResponse.getStatus()).body(updateResponse.readEntity(String.class));
 
     } else {
       return ResponseEntity.badRequest().body("User not exists.");

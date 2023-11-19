@@ -19,8 +19,8 @@ import reactor.core.publisher.Mono;
 @Configuration
 public class SecurityConfig {
   @Bean
-  @Profile("!dev")
-  SecurityWebFilterChain defaultFilterChain(ServerHttpSecurity http) {
+  @Profile("!local")
+  SecurityWebFilterChain filterChain(ServerHttpSecurity http) {
     log.info("SecurityWebFilterChain bean created. type --> default");
 
     return http
@@ -38,8 +38,8 @@ public class SecurityConfig {
 
   
   @Bean
-  @Profile("dev")
-  SecurityWebFilterChain devOnlyFilterChain(ServerHttpSecurity http) {
+  @Profile("local")
+  SecurityWebFilterChain filterChainLocalOnly(ServerHttpSecurity http) {
     log.info("SecurityWebFilterChain bean created. type --> local dev only");
 
     return http

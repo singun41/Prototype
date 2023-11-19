@@ -11,9 +11,9 @@ public class ReqDtoUpdate {
   @NotBlank
   private String username;
 
-  @NotNull
-  private Boolean enabled;
-
   @NotBlank
   private String password;
+
+  @NotNull
+  private Boolean enabled;
 }

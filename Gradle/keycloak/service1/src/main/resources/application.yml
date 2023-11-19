@@ -1,7 +1,7 @@
 spring:
   profiles:
     include:
-    - ${ENV_STUDY}
+    - ${ENV}
   
   application:
     name: service-1
@@ -14,10 +14,13 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://keycloak-2203.local-cubi5.com/realms/keycloak-2203
-          # issuer-uri: http://keycloak-1611.local-cubi5.com/auth/realms/keycloak-1611
-          jwk-set-uri: http://keycloak-2203.local-cubi5.com/realms/keycloak-2203/protocol/openid-connect/certs
-          # jwk-set-uri: http://keycloak-1611.local-cubi5.com/auth/realms/keycloak-1611/protocol/openid-connect/certs
+          # version 22.0.3, 22.0.5
+          issuer-uri: http://keycloak-2203.local-cubi5.com/realms/my-realm
+          jwk-set-uri: http://keycloak-2203.local-cubi5.com/realms/my-realm/protocol/openid-connect/certs
+          
+          # version 16.1.1 jboss/keycloak
+          # issuer-uri: http://keycloak-1611.local-cubi5.com/auth/realms/my-realm
+          # jwk-set-uri: http://keycloak-1611.local-cubi5.com/auth/realms/my-realm/protocol/openid-connect/certs
 
 
 server:
@@ -56,12 +59,15 @@ management:
 
 springdoc:
   cache:
-    disabled: false
+    disabled: true
   api-docs:
     enabled: true
     path: /v3/api-docs
   swagger-ui:
-    enabled: false
+    enabled: false   # intergrate in gateway
+    tagsSorter: alpha
+    operationsSorter: alpha
+    docExpansion: none
     # path: /swagger-ui.html
     # urls:
     #   - name: service-1

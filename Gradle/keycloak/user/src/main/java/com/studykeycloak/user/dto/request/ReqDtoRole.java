@@ -6,10 +6,7 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @Getter
-public class ReqDtoNewUser {
+public class ReqDtoRole {
   @NotBlank
   private String username;
-
-  @NotBlank
-  private String password;
 }

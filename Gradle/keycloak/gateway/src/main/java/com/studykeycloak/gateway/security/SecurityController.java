@@ -9,7 +9,6 @@ import com.studykeycloak.gateway.security.dto.request.ReqDtoLogin;
 import com.studykeycloak.gateway.security.dto.request.ReqDtoRefreshToken;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,11 +22,11 @@ public class SecurityController {
   private final SecurityService securityService;
 
 
-  @Operation(summary = "로그인", description = "로그인 API")
-  @PostMapping("/login")
-  public Mono<ResponseEntity<?>> login(@RequestBody ReqDtoLogin dto) {
+  @Operation(summary = "로그인 - client test-a", description = "로그인 API")
+  @PostMapping("/login/client/test-a")
+  public Mono<ResponseEntity<?>> loginClientTestA(@RequestBody ReqDtoLogin dto) {
     try {
-      Mono<ResponseEntity<?>> res = securityService.login(dto);
+      Mono<ResponseEntity<?>> res = securityService.loginClientTestA(dto);
       return res.onErrorReturn(ResponseEntity.badRequest().body("Invalid credentials.")).flatMap(Mono::just);
 
     } catch(Exception e) {
@@ -37,11 +36,42 @@ public class SecurityController {
   }
 
 
-  @Operation(summary = "토큰 갱신", description = "토큰 갱신하기")
-  @PostMapping("/refresh")
-  public Mono<ResponseEntity<?>> refresh(@RequestBody ReqDtoRefreshToken dto) {
+  @Operation(summary = "토큰 갱신 - client test-a", description = "토큰 갱신하기")
+  @PostMapping("/refresh/client/test-a")
+  public Mono<ResponseEntity<?>> tokenRefreshClientTestA(@RequestBody ReqDtoRefreshToken dto) {
     try {
-      Mono<ResponseEntity<?>> res = securityService.refresh(dto);
+      Mono<ResponseEntity<?>> res = securityService.tokenRefreshClientTestA(dto);
+      return res.onErrorReturn(ResponseEntity.badRequest().body("Invalid token.")).flatMap(Mono::just);
+
+    } catch(Exception e) {
+      log.error("{}", e.getMessage());
+      return Mono.just(ResponseEntity.badRequest().body("Error."));
+    }
+  }
+
+
+
+
+
+  @Operation(summary = "로그인 - client test-b", description = "로그인 API")
+  @PostMapping("/login/client/test-b")
+  public Mono<ResponseEntity<?>> loginClientTestB(@RequestBody ReqDtoLogin dto) {
+    try {
+      Mono<ResponseEntity<?>> res = securityService.loginClientTestB(dto);
+      return res.onErrorReturn(ResponseEntity.badRequest().body("Invalid credentials.")).flatMap(Mono::just);
+
+    } catch(Exception e) {
+      log.error("{}", e.getMessage());
+      return Mono.just(ResponseEntity.badRequest().body("Error."));
+    }
+  }
+
+
+  @Operation(summary = "토큰 갱신 - client test-b", description = "토큰 갱신하기")
+  @PostMapping("/refresh/client/test-b")
+  public Mono<ResponseEntity<?>> tokenRefreshClientTestB(@RequestBody ReqDtoRefreshToken dto) {
+    try {
+      Mono<ResponseEntity<?>> res = securityService.tokenRefreshClientTestB(dto);
       return res.onErrorReturn(ResponseEntity.badRequest().body("Invalid token.")).flatMap(Mono::just);
 
     } catch(Exception e) {

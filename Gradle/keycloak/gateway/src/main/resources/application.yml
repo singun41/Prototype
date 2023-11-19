@@ -1,7 +1,7 @@
 spring:
   profiles:
     include:
-    - ${ENV_STUDY}
+    - ${ENV}
   
   application:
     name: gateway
@@ -12,21 +12,6 @@ spring:
 
   cloud:
     gateway:
-      # default-filters:
-      #   - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
-      # globalcors:
-      #   cors-configurations:
-      #     '[/**]':
-      #       allowedOrigins:
-      #         - http://172.30.1.50:8080
-      #         - http://172.30.1.50:8090
-      #         - http://172.30.1.50:9990
-      #         - http://localhost:8080
-      #         - http://localhost:8090
-      #         - http://localhost:9990
-      #       allow-credentials: true
-      #       allowedHeaders: '*'
-      #       allowedMethods: '*'
       routes:
       - id: service-user
         uri: lb://SERVICE-USER
@@ -45,7 +30,7 @@ spring:
       - id: service-2
         uri: lb://SERVICE-2
         predicates:
-          - Path=/service-2/**
+          - Path=/service-2/**, /service-2/v3/api-docs/**
         filters:
           - RewritePath=/service-2/(?<path>.*), /$\{path}
 
@@ -80,12 +65,15 @@ springdoc:
   webjars:
     prefix: #remove /webjars (not single slash('/'). just empty.)
   cache:
-    disabled: false
+    disabled: true
   api-docs:
     enabled: true
     path: /v3/api-docs
   swagger-ui:
     enabled: true
+    tagsSorter: alpha
+    operationsSorter: alpha
+    docExpansion: none
     # path: /swagger-ui.html
     urls:
       - name: gateway
@@ -94,3 +82,5 @@ springdoc:
         url: /service-user/v3/api-docs
       - name: service-1
         url: /service-1/v3/api-docs
+      - name: service-2
+        url: /service-2/v3/api-docs

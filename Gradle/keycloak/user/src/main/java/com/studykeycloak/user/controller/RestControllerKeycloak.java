@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.studykeycloak.user.dto.request.ReqDtoNewUser;
+import com.studykeycloak.user.dto.request.ReqDtoRole;
 import com.studykeycloak.user.dto.request.ReqDtoUpdate;
 import com.studykeycloak.user.service.ServiceKeycloak;
 
@@ -26,45 +27,110 @@ public class RestControllerKeycloak {
   private final ServiceKeycloak serviceUser;
 
 
-  @Operation(summary = "유저 추가", description = "유저 추가하는 API")
+  @Operation(summary = "유저 생성", description = "유저 추가하는 API")
   @PostMapping
   public ResponseEntity<?> addNewUser(@RequestBody @Validated ReqDtoNewUser dto, BindingResult result) {
     if(result.hasErrors())
       return ResponseEntity.badRequest().body(result.getAllErrors().get(0).getDefaultMessage());
-
     return serviceUser.addNewUser(dto);
   }
 
 
-  @Operation(summary = "유저 정보 업데이트")
+  @Operation(summary = "유저 정보 업데이트", description = "패스워드 및 계정 사용 여부")
   @PutMapping
-  public ResponseEntity<?> update(@RequestBody ReqDtoUpdate dto) {
-    return serviceUser.update(dto);
+  public ResponseEntity<?> updateUserInfo(@RequestBody ReqDtoUpdate dto) {
+    return serviceUser.updateUserInfo(dto);
   }
 
 
-  @Operation(summary = "권한 추가 - manager")
-  @PostMapping("/role/manager")
-  public ResponseEntity<?> addRoleManager(@RequestBody ReqDtoUpdate dto) {
-    return serviceUser.addRoleManager(dto);
-  }
-
-  @Operation(summary = "권한 제거 - manager")
-  @DeleteMapping("/role/manager")
-  public ResponseEntity<?> removeRoleManager(@RequestBody ReqDtoUpdate dto) {
-    return serviceUser.removeRoleManager(dto);
-  }
 
 
-  @Operation(summary = "권한 추가 - director")
-  @PostMapping("/role/director")
-  public ResponseEntity<?> addRoleDirector(@RequestBody ReqDtoUpdate dto) {
-    return serviceUser.addRoleDirector(dto);
+
+  /* ----- ----- ----- ----- ----- client test-a ----- ----- ----- ----- ----- */
+  @Operation(summary = "권한 user 추가 - client test-a")
+  @PostMapping("/role/client/test-a/user")
+  public ResponseEntity<?> addRoleUserClientTestA(@RequestBody ReqDtoRole dto) {
+    return serviceUser.addRoleUser(dto, ServiceKeycloak.RealmClient.TEST_A);
   }
 
-  @Operation(summary = "권한 제거 - director")
-  @DeleteMapping("/role/director")
-  public ResponseEntity<?> removeRoleDirector(@RequestBody ReqDtoUpdate dto) {
-    return serviceUser.removeRoleDirector(dto);
+  @Operation(summary = "권한 user 제거 - client test-a")
+  @DeleteMapping("/role/client/test-a/user")
+  public ResponseEntity<?> removeRoleUserClientTestA(@RequestBody ReqDtoRole dto) {
+    return serviceUser.removeRoleUser(dto, ServiceKeycloak.RealmClient.TEST_A);
   }
+
+
+
+  @Operation(summary = "권한 manager 추가 - client test-a")
+  @PostMapping("/role/client/test-a/manager")
+  public ResponseEntity<?> addRoleManagerClientTestA(@RequestBody ReqDtoRole dto) {
+    return serviceUser.addRoleManager(dto, ServiceKeycloak.RealmClient.TEST_A);
+  }
+
+  @Operation(summary = "권한 manager 제거 - client test-a")
+  @DeleteMapping("/role/client/test-a/manager")
+  public ResponseEntity<?> removeRoleManagerClientTestA(@RequestBody ReqDtoRole dto) {
+    return serviceUser.removeRoleManager(dto, ServiceKeycloak.RealmClient.TEST_A);
+  }
+
+
+
+  @Operation(summary = "권한 director 추가 - client test-a")
+  @PostMapping("/role/client/test-a/director")
+  public ResponseEntity<?> addRoleDirectorClientTestA(@RequestBody ReqDtoRole dto) {
+    return serviceUser.addRoleDirector(dto, ServiceKeycloak.RealmClient.TEST_A);
+  }
+
+  @Operation(summary = "권한 director 제거 - client test-a")
+  @DeleteMapping("/role/client/test-a/director")
+  public ResponseEntity<?> removeRoleDirectorClientTestA(@RequestBody ReqDtoRole dto) {
+    return serviceUser.removeRoleDirector(dto, ServiceKeycloak.RealmClient.TEST_A);
+  }
+  /* ----- ----- ----- ----- ----- client test-a ----- ----- ----- ----- ----- */
+
+
+
+
+
+  /* ----- ----- ----- ----- ----- client test-b ----- ----- ----- ----- ----- */
+  @Operation(summary = "권한 user 추가 - client test-b")
+  @PostMapping("/role/client/test-b/user")
+  public ResponseEntity<?> addRoleUserClientTestB(@RequestBody ReqDtoRole dto) {
+    return serviceUser.addRoleUser(dto, ServiceKeycloak.RealmClient.TEST_B);
+  }
+
+  @Operation(summary = "권한 user 제거 - client test-b")
+  @DeleteMapping("/role/client/test-b/user")
+  public ResponseEntity<?> removeRoleUserClientTestB(@RequestBody ReqDtoRole dto) {
+    return serviceUser.removeRoleUser(dto, ServiceKeycloak.RealmClient.TEST_B);
+  }
+
+
+
+  @Operation(summary = "권한 manager 추가 - client test-b")
+  @PostMapping("/role/client/test-b/manager")
+  public ResponseEntity<?> addRoleManagerClientTestB(@RequestBody ReqDtoRole dto) {
+    return serviceUser.addRoleManager(dto, ServiceKeycloak.RealmClient.TEST_B);
+  }
+
+  @Operation(summary = "권한 manager 제거 - client test-b")
+  @DeleteMapping("/role/client/test-b/manager")
+  public ResponseEntity<?> removeRoleManagerClientTestB(@RequestBody ReqDtoRole dto) {
+    return serviceUser.removeRoleManager(dto, ServiceKeycloak.RealmClient.TEST_B);
+  }
+
+
+
+  @Operation(summary = "권한 director 추가 - client test-b")
+  @PostMapping("/role/client/test-b/director")
+  public ResponseEntity<?> addRoleDirectorClientTestB(@RequestBody ReqDtoRole dto) {
+    return serviceUser.addRoleDirector(dto, ServiceKeycloak.RealmClient.TEST_B);
+  }
+
+  @Operation(summary = "권한 director 제거 - client test-b")
+  @DeleteMapping("/role/client/test-b/director")
+  public ResponseEntity<?> removeRoleDirectorClientTestB(@RequestBody ReqDtoRole dto) {
+    return serviceUser.removeRoleDirector(dto, ServiceKeycloak.RealmClient.TEST_B);
+  }
+  /* ----- ----- ----- ----- ----- client test-b ----- ----- ----- ----- ----- */
 }

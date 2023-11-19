@@ -24,8 +24,8 @@ public class SecurityConfig {
 
 
   @Bean
-  @Profile("!dev")
-  SecurityFilterChain defaultFilterChain(HttpSecurity http) throws Exception {
+  @Profile("!local")
+  SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     log.info("SecurityWebFilterChain bean created. type --> default");
 
     return http
@@ -40,8 +40,8 @@ public class SecurityConfig {
 
 
   @Bean
-  @Profile("dev")
-  SecurityFilterChain devOnlyFilterChain(HttpSecurity http) throws Exception {
+  @Profile("local")
+  SecurityFilterChain filterChainLocalOnly(HttpSecurity http) throws Exception {
     log.info("SecurityWebFilterChain bean created. type --> local dev only");
     
     return http
