@@ -12,30 +12,6 @@ spring:
     ansi:
       enabled: always
 
-  datasource:
-    driver-class-name: org.mariadb.jdbc.Driver
-    username: ${URL_STUDY_DB_ID}
-    password: ${URL_STUDY_DB_PW}
-    url: ${URL_STUDY_DB}
-    hikari:
-      maximum-pool-size: 2
-      max-lifetime: 25200000
-
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    generate-ddl: false
-    show-sql: false
-    open-in-view: false
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MariaDB103Dialect
-        format_sql: true
-
-  sql:
-    init:
-      mode: always
-
 
 server:
   port: 8080
