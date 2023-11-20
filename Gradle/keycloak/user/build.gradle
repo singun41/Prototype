@@ -36,9 +36,8 @@ dependencies {
 
 	implementation 'org.keycloak:keycloak-admin-client:22.0.5'
 	implementation 'jakarta.ws.rs:jakarta.ws.rs-api:3.1.0'
-	// implementation 'com.google.code.gson:gson:2.10.1'
-
-	compileOnly 'jakarta.platform:jakarta.jakartaee-api:10.0.0'
+	implementation 'jakarta.platform:jakarta.jakartaee-api:10.0.0'
+	
 	compileOnly 'org.projectlombok:lombok'
 
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
