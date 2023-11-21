@@ -15,8 +15,8 @@ spring:
       resourceserver:
         jwt:
           # version 22.0.3, 22.0.5
-          issuer-uri: http://keycloak-2203.local-cubi5.com/realms/my-realm
-          jwk-set-uri: http://keycloak-2203.local-cubi5.com/realms/my-realm/protocol/openid-connect/certs
+          issuer-uri: http://keycloak-22.local-cubi5.com/realms/my-realm
+          jwk-set-uri: http://keycloak-22.local-cubi5.com/realms/my-realm/protocol/openid-connect/certs
           
           # version 16.1.1 jboss/keycloak
           # issuer-uri: http://keycloak-1611.local-cubi5.com/auth/realms/my-realm

@@ -10,7 +10,7 @@ import lombok.Getter;
 
 @Configuration
 public class ConfigKeycloak {
-  public final static String URL_SERVER = "http://keycloak-2203.local-cubi5.com";
+  public final static String URL_SERVER = "http://keycloak-22.local-cubi5.com";
 
   // custom realm and client
   public final static String MY_REALM = "my-realm";

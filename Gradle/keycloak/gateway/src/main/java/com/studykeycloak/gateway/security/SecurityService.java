@@ -22,7 +22,7 @@ import reactor.core.publisher.Mono;
 @Service
 @RequiredArgsConstructor
 public class SecurityService {
-  private final String urlKeycloak = "http://keycloak-2203.local-cubi5.com";
+  private final String urlKeycloak = "http://keycloak-22.local-cubi5.com";
   private final String myRealm = "my-realm";
 
   private final String urlToken =

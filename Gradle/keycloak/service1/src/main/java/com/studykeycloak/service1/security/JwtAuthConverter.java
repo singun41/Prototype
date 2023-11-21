@@ -15,7 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -26,7 +27,6 @@ import java.util.stream.Stream;
 public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationToken> {
   private final JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
   private final String claimResourceAccess = "resource_access";
-  private final String roles = "roles";
 
 
   @AllArgsConstructor
@@ -39,44 +39,43 @@ public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
   
   @Override
   public AbstractAuthenticationToken convert(Jwt jwt) {
+    String username = jwt.getClaim("preferred_username");
+    log.info("username=[{}]", username);
+
     Collection<GrantedAuthority> authorities = Stream.concat(
       jwtGrantedAuthoritiesConverter.convert(jwt).stream(),
       extractResourceRoles(jwt).stream()).collect(Collectors.toSet()
     );
-
-    String username = jwt.getClaim("preferred_username");
-    log.info("username=[{}]", username);
+    
     return new JwtAuthenticationTokenCustom(jwt, authorities, jwt.getClaim(JwtClaimNames.SUB), username);
   }
 
 
-  @SuppressWarnings("unchecked")
   private Collection<? extends GrantedAuthority> extractResourceRoles(Jwt jwt) {
     Map<String, Object> resourceAccess = jwt.getClaim(claimResourceAccess);
 
-    Map<String, Object> resource = new HashMap<>();
+    Set<String> resource = new HashSet<>();
     Arrays.stream(RealmClient.values()).forEach(realmClient -> getClientRoles(resource, resourceAccess, realmClient));
 
-    Collection<String> resourceRoles = (Collection<String>) resource.get(roles);
-
+    Collection<String> resourceRoles = (Collection<String>) resource;
     if(resourceAccess == null || resourceRoles == null || resource.isEmpty()) {
       return Set.of();
     }
-
-    if(resourceRoles != null) {
-      resourceRoles.forEach(e -> log.info("role=[{}]", e));
-    }
-
-    log.info("resourceRoles={}", resourceRoles);
+    
     return resourceRoles.stream().map(role -> new SimpleGrantedAuthority(role)).collect(Collectors.toSet());
   }
 
 
   @SuppressWarnings("unchecked")
-  private void getClientRoles(Map<String, Object> resource, Map<String, Object> resourceAccess, RealmClient client) {
+  private void getClientRoles(Set<String> resource, Map<String, Object> resourceAccess, RealmClient client) {
     if(resourceAccess == null || resourceAccess.get(client.getTitle()) == null) {
       return;
     }
-    resource.putAll((Map<String, Object>) resourceAccess.get(client.getTitle()));
+
+    Map<String, Object> mapRoles = (Map<String, Object>) resourceAccess.get(client.getTitle());
+    List<String> roles = (List<String>) mapRoles.get("roles");
+
+    log.info("client [{}] --> roles={}", client.getTitle(), roles);
+    resource.addAll(roles);
   }
 }
