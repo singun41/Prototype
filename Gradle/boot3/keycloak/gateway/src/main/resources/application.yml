@@ -1,0 +1,86 @@
+spring:
+  profiles:
+    include:
+    - ${ENV}
+  
+  application:
+    name: gateway
+
+  main:
+    web-application-type: reactive
+    banner-mode: console
+
+  cloud:
+    gateway:
+      routes:
+      - id: service-user
+        uri: lb://SERVICE-USER
+        predicates:
+          - Path=/service-user/**, /service-user/v3/api-docs/**
+        filters:
+          - RewritePath=/service-user/(?<path>.*), /$\{path}
+
+      - id: service-1
+        uri: lb://SERVICE-1
+        predicates:
+          - Path=/service-1/**, /service-1/v3/api-docs/**
+        filters:
+          - RewritePath=/service-1/(?<path>.*), /$\{path}
+
+      - id: service-2
+        uri: lb://SERVICE-2
+        predicates:
+          - Path=/service-2/**, /service-2/v3/api-docs/**
+        filters:
+          - RewritePath=/service-2/(?<path>.*), /$\{path}
+
+
+logging:
+  level:
+    root: info
+
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}-${spring.cloud.client.ip-address}
+    hostname: study-gateway
+
+
+management:
+  endpoint:
+    shutdown:
+      enabled: false
+  endpoints:
+    web:
+      exposure:
+        include:
+        - "*"
+
+
+springdoc:
+  webjars:
+    prefix: #remove /webjars (not single slash('/'). just empty.)
+  cache:
+    disabled: true
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    tagsSorter: alpha
+    operationsSorter: alpha
+    docExpansion: none
+    path: /swagger-ui.html
+    urls:
+      - name: gateway
+        url: /v3/api-docs
+      - name: service-user
+        url: /service-user/v3/api-docs
+      - name: service-1
+        url: /service-1/v3/api-docs
+      - name: service-2
+        url: /service-2/v3/api-docs

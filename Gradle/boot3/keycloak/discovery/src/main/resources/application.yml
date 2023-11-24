@@ -1,0 +1,41 @@
+spring:
+  profiles:
+    include:
+    - ${ENV}
+
+  application:
+    name: discovery
+  
+  main:
+    web-application-type: servlet
+    banner-mode: console
+
+
+  security:
+    user:
+      name: admin
+      password: admin
+
+
+server:
+  port: 8761
+  servlet:
+    session:
+      timeout: 720m
+
+
+logging:
+  level:
+    root: info
+
+
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    service-url:
+      defaultZone: http://admin:admin@localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}-${spring.cloud.client.ip-address}
+    hostname: study-discovery

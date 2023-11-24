@@ -1,0 +1,52 @@
+spring:
+  application:
+    name: admin-server
+  
+  main:
+    web-application-type: servlet
+    banner-mode: console
+
+  security:
+    user:
+      name: admin
+      password: admin
+    
+
+  devtools:
+    livereload:
+      enabled: true
+
+  output:
+    ansi:
+      enabled: always
+
+  boot:
+    admin:
+      discovery:
+        ignored-services:
+        - admin-server
+
+
+server:
+  port: 9999
+  servlet:
+    session:
+      timeout: 720m
+
+
+logging:
+  level:
+    root: info
+
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    enabled: true
+    service-url:
+      defaultZone: http://admin:admin@localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}-${spring.cloud.client.ip-address}
+    hostname: study-admin-server

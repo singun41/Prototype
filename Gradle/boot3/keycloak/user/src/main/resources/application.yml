@@ -1,0 +1,62 @@
+spring:
+  profiles:
+    include:
+    - ${ENV}
+  
+  application:
+    name: service-user
+
+  main:
+    web-application-type: servlet
+    banner-mode: console
+
+
+server:
+  servlet:
+    context-path: /
+    encoding:
+      charset: UTF-8
+      force: true
+
+
+logging:
+  level:
+    root: info
+
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}-${spring.cloud.client.ip-address}
+    hostname: service-user
+
+
+management:
+  endpoint:
+    shutdown:
+      enabled: false
+  endpoints:
+    web:
+      exposure:
+        include:
+        - "*"
+
+
+springdoc:
+  cache:
+    disabled: true
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: false   # intergrate in gateway
+    tagsSorter: alpha
+    operationsSorter: alpha
+    docExpansion: none
+    # path: /swagger-ui.html
+    # urls:
+    #   - name: service-user
+    #     url: /v3/api-docs

@@ -1,0 +1,24 @@
+spring:
+  config:
+    activate:
+      on-profile:
+      - local
+
+  devtools:
+    livereload:
+      enabled: true
+
+  output:
+    ansi:
+      enabled: always
+
+
+server:
+  http2:
+    enabled: false
+  
+  servlet:
+    session:
+      cookie:
+        http-only: false
+        secure: false

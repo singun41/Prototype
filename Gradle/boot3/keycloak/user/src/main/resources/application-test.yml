@@ -1,0 +1,56 @@
+spring:
+  config:
+    activate:
+      on-profile:
+      - test
+
+  devtools:
+    livereload:
+      enabled: false
+
+  output:
+    ansi:
+      enabled: never
+
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    username: ${URL_TEST_DB_ID}
+    password: ${URL_TEST_DB_PW}
+    url: ${URL_TEST_DB}
+    hikari:
+      maximum-pool-size: 2
+      max-lifetime: 25200000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    generate-ddl: false
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MariaDB103Dialect
+        format_sql: true
+
+  sql:
+    init:
+      mode: always
+
+
+server:
+  port: 8080
+  http2:
+    enabled: true
+
+  servlet:
+    session:
+      cookie:
+        http-only: false
+        secure: false
+
+
+eureka:
+  client:
+    enabled: true
+    service-url:
+      defaultZone: ${URL_REGISTRY}

@@ -1,0 +1,32 @@
+spring:
+  config:
+    activate:
+      on-profile:
+      - local
+
+  devtools:
+    livereload:
+      enabled: true
+
+  output:
+    ansi:
+      enabled: always
+
+
+server:
+  port: 8080
+  http2:
+    enabled: false
+
+  reactive:
+    session:
+      cookie:
+        http-only: false
+        secure: false
+
+
+eureka:
+  client:
+    enabled: true
+    service-url:
+      defaultZone: http://admin:admin@localhost:8761/eureka/
