@@ -1,4 +1,4 @@
-package com.studykeycloak.service1.common;
+package com.studykeycloak.service1.global;
 
 import java.security.Principal;
 

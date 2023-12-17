@@ -1,4 +1,4 @@
-package com.studykeycloak.service1.security;
+package com.studykeycloak.service1.global.security;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;

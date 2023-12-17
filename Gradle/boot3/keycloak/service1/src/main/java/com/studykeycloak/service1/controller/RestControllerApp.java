@@ -5,9 +5,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.studykeycloak.service1.common.RequestUtils;
-import com.studykeycloak.service1.common.ConfigProperties;
 import com.studykeycloak.service1.controller.dto.ReqDto;
+import com.studykeycloak.service1.global.ConstantsClientRoles;
+import com.studykeycloak.service1.global.RequestUtils;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,7 +33,7 @@ public class RestControllerApp {
 
   @Operation(summary = "user", description = "유저 권한 접근 가능")
   @GetMapping("/user")
-  @PreAuthorize(ConfigProperties.USER_ROLE_DEFAULT)
+  @PreAuthorize(ConstantsClientRoles.USER)
   public ResponseEntity<?> accessUser() {
     log.info("userId=[{}]", requestUtils.getUserId());
 
@@ -45,7 +45,7 @@ public class RestControllerApp {
 
   @Operation(summary = "manager", description = "매니저 권한 접근 가능")
   @GetMapping("/manager")
-  @PreAuthorize(ConfigProperties.USER_ROLE_MANAGER)
+  @PreAuthorize(ConstantsClientRoles.MANAGER)
   public ResponseEntity<?> accessManager() {
     log.info("userId=[{}]", requestUtils.getUserId());
 
@@ -57,7 +57,7 @@ public class RestControllerApp {
 
   @Operation(summary = "admin", description = "어드민 권한 접근 가능")
   @GetMapping("/admin")
-  @PreAuthorize(ConfigProperties.USER_ROLE_ADMIN)
+  @PreAuthorize(ConstantsClientRoles.ADMIN)
   public ResponseEntity<?> accessAdmin() {
     log.info("userId=[{}]", requestUtils.getUserId());
 

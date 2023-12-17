@@ -1,4 +1,4 @@
-package com.studykeycloak.service1.security;
+package com.studykeycloak.service1.global.security;
 
 import java.util.Collection;
 

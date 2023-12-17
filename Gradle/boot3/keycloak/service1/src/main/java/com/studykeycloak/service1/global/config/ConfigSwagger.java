@@ -1,4 +1,4 @@
-package com.studykeycloak.service1.config;
+package com.studykeycloak.service1.global.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
