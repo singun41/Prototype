@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 // import java.util.Map;
+import java.util.UUID;
 
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
@@ -86,7 +87,7 @@ public class ServiceKeycloak {
       성공할 경우 200 OK
     */
     UsersResource usersResource = keycloak.realms().realm(ConfigKeycloak.MY_REALM).users();
-    Response res = usersResource.create(user);
+    Response res = usersResource.create(setAttribute(user));
 
     List<String> userUuidValues = new ArrayList<>();
     if(HttpStatus.valueOf(res.getStatus()).is2xxSuccessful()) {
@@ -220,7 +221,7 @@ public class ServiceKeycloak {
 
       user.setEnabled(dto.getEnabled().booleanValue());
       user.setCredentials(Collections.singletonList(password));
-      userResource.update(user);
+      userResource.update(setAttribute(user));
 
       log.info("username=[{}] password updated.", user.getUsername());
 
@@ -232,5 +233,13 @@ public class ServiceKeycloak {
     } else {
       return ResponseEntity.badRequest().body("User not exists.");
     }
+  }
+
+
+  private UserRepresentation setAttribute(UserRepresentation user) {
+    // user 속성값 추가 테스트
+    String attributeUuidStr = UUID.randomUUID().toString();
+    log.info("attributeUuidStr: {}", attributeUuidStr);
+    return user.singleAttribute("key", attributeUuidStr);
   }
 }
