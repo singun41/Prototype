@@ -40,6 +40,7 @@ public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
   @Override
   public AbstractAuthenticationToken convert(Jwt jwt) {
     String username = jwt.getClaim("preferred_username");
+    String uuid = jwt.getClaim("uuid");
     log.info("username=[{}]", username);
 
     Collection<GrantedAuthority> authorities = Stream.concat(
@@ -47,7 +48,7 @@ public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
       extractResourceRoles(jwt).stream()).collect(Collectors.toSet()
     );
     
-    return new JwtAuthenticationTokenCustom(jwt, authorities, jwt.getClaim(JwtClaimNames.SUB), username);
+    return new JwtAuthenticationTokenCustom(jwt, authorities, jwt.getClaim(JwtClaimNames.SUB), username, uuid);
   }
 
 
