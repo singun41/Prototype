@@ -48,7 +48,7 @@ public class SecurityService {
   }
 
   public Mono<ResponseEntity<?>> tokenRefreshClientTestA(ReqDtoRefreshToken token) throws Exception {
-    return tokenRefresh(token, RealmClient.TEST_B);
+    return tokenRefresh(token, RealmClient.TEST_A);
   }
 
 
