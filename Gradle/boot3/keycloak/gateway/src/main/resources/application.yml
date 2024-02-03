@@ -74,7 +74,9 @@ springdoc:
     tagsSorter: alpha
     operationsSorter: alpha
     docExpansion: none
-    path: /swagger-ui.html
+    disable-swagger-default-url: true
+    # path: /swagger-ui.html
+    path: /my-project/swagger-ui.html
     urls:
       - name: gateway
         url: /v3/api-docs
