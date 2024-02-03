@@ -8,6 +8,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import com.studykeycloak.service1.global.security.JwtAuthenticationTokenCustom;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -21,6 +23,13 @@ public class RequestUtils {
   public String getUserId() {
     Principal principal = getCurrentRequest().getUserPrincipal();
     log.info("principal=[{}]", principal);
-    return principal.getName();   // 유저의 uuid 값이 나온다.
+
+    if(principal instanceof JwtAuthenticationTokenCustom customJwt) {
+      log.info("user-attribute[uuid]: {}", customJwt.getUuid());
+    }
+
+    return ((JwtAuthenticationTokenCustom) principal).getUuid();   // JwtAuthConverter에서 생성할 때 파라미터로 넣은 uuid 값이 나옴.
+
+    // return principal.getName();   // JwtAuthConverter에서 생성할 때 파라미터로 넣은 jwt.getClaim(JwtClaimNames.SUB) 값이 나옴.
   }
 }
