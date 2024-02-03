@@ -36,7 +36,7 @@ public class SecurityController {
   }
 
 
-  @Operation(summary = "토큰 갱신 - client test-a", description = "토큰 갱신하기")
+  @Operation(summary = "토큰 갱신 - client test-a", description = "토큰 갱신하기 : refresh token 입력")
   @PostMapping("/refresh/client/test-a")
   public Mono<ResponseEntity<?>> tokenRefreshClientTestA(@RequestBody ReqDtoRefreshToken dto) {
     try {
